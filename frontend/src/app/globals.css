@@ -1,0 +1,77 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-background: #000000;
+  --color-foreground: #ffffff;
+  --color-neon-blue: #00f0ff;
+  --color-cyan: #0ff;
+  --color-purple: #b026ff;
+  --color-neon-red: #ff003c;
+  --color-neon-green: #39ff14;
+  --color-dark-gray: #111111;
+  --color-panel: rgba(17, 17, 17, 0.7);
+  
+  --font-sans: var(--font-inter), sans-serif;
+  --font-heading: var(--font-orbitron), sans-serif;
+}
+
+:root {
+  --background: #000000;
+  --foreground: #ffffff;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+}
+
+/* Glassmorphism utilities */
+@utility glass {
+  background: rgba(10, 10, 10, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 240, 255, 0.2);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+}
+
+@utility glass-panel {
+  background: rgba(15, 15, 20, 0.8);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(176, 38, 255, 0.2);
+  border-radius: 12px;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #000;
+}
+::-webkit-scrollbar-thumb {
+  background: #00f0ff;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #b026ff;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  letter-spacing: 0.05em;
+}
+
+/* Neon glow utilities */
+@utility neon-text-blue {
+  text-shadow: 0 0 5px #00f0ff, 0 0 10px #00f0ff, 0 0 20px #00f0ff;
+}
+
+@utility neon-text-red {
+  text-shadow: 0 0 5px #ff003c, 0 0 10px #ff003c, 0 0 20px #ff003c;
+}
+
+@utility neon-border-cyan {
+  box-shadow: 0 0 5px #0ff, inset 0 0 5px #0ff;
+  border: 1px solid #0ff;
+}

@@ -1,0 +1,18 @@
+{
+  "name": "cyber-suraksha",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cyber Suraksha - Root Workspace",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=backend & npm run dev --workspace=frontend",
+    "build": "npm run build --workspaces",
+    "install:all": "npm install"
+  },
+  "dependencies": {
+    "mongodb": "^7.2.0"
+  }
+}
