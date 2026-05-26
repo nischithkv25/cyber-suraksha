@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Phone, Key, Mail, Lock, ArrowRight, ShieldCheck, RefreshCw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005/api';
 
 export default function LoginPage() {
   const [activeTab, setActiveTab] = useState<'password' | 'otp'>('password');

@@ -5,6 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { AlertTriangle, PhoneCall, ShieldAlert, X, Activity } from 'lucide-react';
 import { io, Socket } from 'socket.io-client';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005/api';
+const SOCKET_URL = API_URL.endsWith('/api') ? API_URL.slice(0, -4) : API_URL;
+
 export default function EmergencyDashboard() {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [emergencyAlert, setEmergencyAlert] = useState<any | null>(null);
@@ -14,7 +17,7 @@ export default function EmergencyDashboard() {
 
   useEffect(() => {
     // Initialize Socket Connection
-    const newSocket = io('http://localhost:5000');
+    const newSocket = io(SOCKET_URL);
     setSocket(newSocket);
 
     newSocket.on('connect', () => {
@@ -46,7 +49,7 @@ export default function EmergencyDashboard() {
 
   const handleSimulateThreat = async (severity: string) => {
     try {
-      const res = await fetch('http://localhost:5000/api/emergency/trigger', {
+      const res = await fetch(`${API_URL}/emergency/trigger`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
