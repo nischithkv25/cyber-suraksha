@@ -10,6 +10,13 @@ import {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005/api';
 
+const locationData: { [key: string]: string[] } = {
+  'Karnataka': ['Bengaluru', 'Mysuru', 'Hubballi', 'Mangaluru', 'Belagavi'],
+  'Maharashtra': ['Mumbai', 'Pune', 'Nagpur', 'Thane', 'Nashik'],
+  'Tamil Nadu': ['Chennai', 'Coimbatore', 'Madurai', 'Tiruchirappalli', 'Salem'],
+  'Delhi': ['New Delhi', 'Dwarka', 'Rohini', 'Saket', 'Vasant Kunj']
+};
+
 export default function ProfilePage() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -232,6 +239,68 @@ export default function ProfilePage() {
             </div>
 
           </motion.div>
+
+          {/* Local Threat Level Advisor */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className={`glass-panel p-6 border relative overflow-hidden ${
+              !city 
+                ? 'border-gray-800 bg-black/20' 
+                : (city.trim().toLowerCase() === 'bengaluru' || city.trim().toLowerCase() === 'bangalore')
+                ? 'border-red-500/30 bg-red-500/5'
+                : (city.trim().toLowerCase() === 'mysuru' || city.trim().toLowerCase() === 'mysore')
+                ? 'border-amber-500/30 bg-amber-500/5'
+                : 'border-yellow-500/30 bg-yellow-500/5'
+            }`}
+          >
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 via-amber-500 to-yellow-500" />
+            
+            <div className="flex items-center gap-2 mb-4">
+              <ShieldAlert className={`${
+                !city 
+                  ? 'text-gray-500' 
+                  : (city.trim().toLowerCase() === 'bengaluru' || city.trim().toLowerCase() === 'bangalore')
+                  ? 'text-red-400'
+                  : (city.trim().toLowerCase() === 'mysuru' || city.trim().toLowerCase() === 'mysore')
+                  ? 'text-amber-400'
+                  : 'text-yellow-400'
+              }`} size={20} />
+              <h3 className="font-heading font-bold text-white text-sm uppercase tracking-wide">
+                {!city 
+                  ? 'LOCATION STATUS: UNSET' 
+                  : (city.trim().toLowerCase() === 'bengaluru' || city.trim().toLowerCase() === 'bangalore')
+                  ? 'CRITICAL LOCAL THREAT'
+                  : (city.trim().toLowerCase() === 'mysuru' || city.trim().toLowerCase() === 'mysore')
+                  ? 'ELEVATED LOCAL THREAT'
+                  : 'MODERATE LOCAL THREAT'}
+              </h3>
+            </div>
+
+            <p className="text-xs text-gray-300 font-mono leading-relaxed mb-4">
+              {!city 
+                ? 'No localized threat data available. Please complete your City and State details in the profile section to receive regional security advisories.'
+                : (city.trim().toLowerCase() === 'bengaluru' || city.trim().toLowerCase() === 'bangalore')
+                ? 'High threat activity detected in Bengaluru. Local Cyber Crime units report active campaigns of electricity bill fraud, spoofed UPI payment alerts, and fake part-time job recruitments.'
+                : (city.trim().toLowerCase() === 'mysuru' || city.trim().toLowerCase() === 'mysore')
+                ? 'Medium threat activity detected in Mysuru. Local police warning: surge in KYC update phishing messages and lottery scam calls targeting senior citizens.'
+                : `Standard threat activity monitored in ${city}. General phishing campaigns, OTP hijacking, and OLX buyer scam loops are reported in this region.`}
+            </p>
+
+            <div className="bg-black/40 border border-gray-800 p-3 rounded text-[11px] font-mono">
+              <span className="text-[#00f0ff] font-bold block mb-1 uppercase">SECURITY ADVISORY:</span>
+              <span className="text-gray-400">
+                {!city 
+                  ? 'Navigate to "EDIT PROFILE" to set your current location.'
+                  : (city.trim().toLowerCase() === 'bengaluru' || city.trim().toLowerCase() === 'bangalore')
+                  ? 'Do not click on SMS links related to electricity bills or verify transactions with unknown callers.'
+                  : (city.trim().toLowerCase() === 'mysuru' || city.trim().toLowerCase() === 'mysore')
+                  ? 'Never share OTPs or download remote access apps (like AnyDesk/TeamViewer) requested by callers claiming to be bank officers.'
+                  : 'Enable multi-factor authentication (MFA) on all social and banking applications.'}
+              </span>
+            </div>
+          </motion.div>
         </div>
 
         {/* Right Column: Personal Details & Edit Form */}
@@ -288,8 +357,8 @@ export default function ProfilePage() {
                 </div>
 
                 <DetailRow icon={<Award className="text-[#00f0ff]" />} label="Blood Group" value={user?.bloodGroup || 'Not Specified'} />
-                <DetailRow icon={<MapPin className="text-[#00f0ff]" />} label="City / Region" value={user?.city || 'Not Specified'} />
                 <DetailRow icon={<Building className="text-[#00f0ff]" />} label="State" value={user?.state || 'Not Specified'} />
+                <DetailRow icon={<MapPin className="text-[#00f0ff]" />} label="City / Region" value={user?.city || 'Not Specified'} />
                 
                 <div className="md:col-span-2 flex items-start gap-3 p-3 bg-black/30 border border-gray-800 rounded-md">
                   <MapPin className="text-[#00f0ff] mt-0.5" size={18} />
@@ -380,25 +449,48 @@ export default function ProfilePage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase">City / Town</label>
-                    <input 
-                      type="text" 
-                      value={city}
-                      onChange={(e) => setCity(e.target.value)}
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase">State</label>
+                    <select
+                      value={state}
+                      onChange={(e) => {
+                        setState(e.target.value);
+                        setCity('');
+                      }}
                       className="w-full bg-black/50 border border-gray-700 rounded-md py-2.5 px-3 text-sm text-white focus:outline-none focus:border-[#00f0ff]"
-                      placeholder="e.g. Mysuru"
-                    />
+                    >
+                      <option value="">Select State</option>
+                      {(() => {
+                        const statesList = Object.keys(locationData);
+                        if (state && !statesList.includes(state)) {
+                          statesList.push(state);
+                        }
+                        return statesList.map((st) => (
+                          <option key={st} value={st}>{st}</option>
+                        ));
+                      })()}
+                    </select>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase">State</label>
-                    <input 
-                      type="text" 
-                      value={state}
-                      onChange={(e) => setState(e.target.value)}
-                      className="w-full bg-black/50 border border-gray-700 rounded-md py-2.5 px-3 text-sm text-white focus:outline-none focus:border-[#00f0ff]"
-                      placeholder="e.g. Karnataka"
-                    />
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase">City / Town</label>
+                    <select
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      disabled={!state}
+                      className="w-full bg-black/50 border border-gray-700 rounded-md py-2.5 px-3 text-sm text-white focus:outline-none focus:border-[#00f0ff] disabled:opacity-40"
+                    >
+                      <option value="">{state ? 'Select City' : 'Select State First'}</option>
+                      {(() => {
+                        if (!state) return null;
+                        const citiesList = [...(locationData[state] || [])];
+                        if (city && !citiesList.includes(city)) {
+                          citiesList.push(city);
+                        }
+                        return citiesList.map((ct) => (
+                          <option key={ct} value={ct}>{ct}</option>
+                        ));
+                      })()}
+                    </select>
                   </div>
 
                   <div className="md:col-span-2">
