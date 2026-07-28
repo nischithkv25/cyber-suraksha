@@ -1,39 +1,48 @@
 import { Request, Response } from 'express';
+import { analyzeThreatContent } from '../services/aiThreatEngine';
 
-export const scanImage = async (req: Request, res: Response) => {
+/**
+ * Analyzes uploaded evidence (image/dossier file metadata) for scam indicators.
+ */
+export const scanImage = async (req: Request, res: Response): Promise<void> => {
   try {
-    // Mock AI image scanning (OCR + Fraud classification)
+    const textToAnalyze = req.body.text || req.file?.originalname || 'Suspicious screenshot evidence';
+    
+    // Perform heuristic threat evaluation
+    const result = analyzeThreatContent(textToAnalyze);
+
     setTimeout(() => {
-      res.status(200).json({
-        threatScore: Math.floor(Math.random() * 100),
-        classification: 'SUSPICIOUS_QR',
-        extractedText: 'Scan to receive Rs. 50,000 lottery winnings',
-        confidence: 94.5
-      });
-    }, 1500); // Simulate processing time
+      res.status(200).json(result);
+    }, 1500); // Simulate neural network processing latency
   } catch (error) {
+    console.error('[AI-SCAN] Error scanning image:', error);
     res.status(500).json({ error: 'AI processing failed' });
   }
 };
 
-export const analyzeText = async (req: Request, res: Response) => {
+/**
+ * Analyzes user-submitted message body text or suspect URLs.
+ */
+export const analyzeText = async (req: Request, res: Response): Promise<void> => {
   try {
     const { text } = req.body;
+    
+    // Perform heuristic threat evaluation
+    const result = analyzeThreatContent(text);
 
-    // Mock AI text analysis (Social engineering detection)
     setTimeout(() => {
-      res.status(200).json({
-        threatScore: text?.toLowerCase().includes('urgent') ? 85 : 15,
-        manipulationTactics: ['Urgency', 'Fear'],
-        summary: 'This message attempts to create a false sense of urgency.'
-      });
-    }, 1000);
+      res.status(200).json(result);
+    }, 1000); // Simulate pattern matcher processing latency
   } catch (error) {
+    console.error('[AI-SCAN] Error analyzing text:', error);
     res.status(500).json({ error: 'AI text analysis failed' });
   }
 };
 
-export const verifyBlockchain = async (req: Request, res: Response) => {
+/**
+ * Verification point for blockchain hashes (keeps existing logic).
+ */
+export const verifyBlockchain = async (req: Request, res: Response): Promise<void> => {
   try {
     const { hash } = req.body;
 
@@ -46,6 +55,7 @@ export const verifyBlockchain = async (req: Request, res: Response) => {
       });
     }, 1200);
   } catch (error) {
+    console.error('[BLOCKCHAIN] Error verifying hash:', error);
     res.status(500).json({ error: 'Blockchain verification failed' });
   }
 };

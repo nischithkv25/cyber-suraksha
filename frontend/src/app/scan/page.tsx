@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { UploadCloud, ShieldAlert, Scan, CheckCircle, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005/api';
+
 export default function AIScanPage() {
   const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
@@ -23,30 +25,48 @@ export default function AIScanPage() {
     return () => clearTimeout(timer);
   }, [countdown, router]);
 
-  const handleScan = () => {
+  const handleScan = async () => {
     if (!file && !url) return;
     
     setIsScanning(true);
+    setResult(null);
     
-    // Mock API Call delay
-    setTimeout(() => {
-      setIsScanning(false);
-      const mockResult = {
-        threatScore: 92,
-        classification: 'PHISHING_SCAM',
-        confidence: 96.5,
-        details: [
-          'Suspicious URL formatting detected',
-          'Urgency words used: "Immediate Action Required"',
-          'Sender email does not match domain'
-        ]
-      };
-      setResult(mockResult);
-
-      if (mockResult.threatScore > 50) {
-        setCountdown(4);
+    try {
+      let res;
+      if (file) {
+        const formData = new FormData();
+        formData.append('image', file);
+        formData.append('text', file.name);
+        res = await fetch(`${API_URL}/ai/scan-image`, {
+          method: 'POST',
+          body: formData,
+        });
+      } else {
+        res = await fetch(`${API_URL}/ai/analyze-text`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ text: url }),
+        });
       }
-    }, 3000);
+
+      if (!res.ok) {
+        throw new Error('AI Scan Service returned an error response');
+      }
+
+      const data = await res.json();
+      setResult(data);
+
+      if (data.threatScore > 50) {
+        setCountdown(6);
+      }
+    } catch (err: any) {
+      console.error('Scan error:', err);
+      alert(err.message || 'AI Scam analysis failed.');
+    } finally {
+      setIsScanning(false);
+    }
   };
 
   return (
