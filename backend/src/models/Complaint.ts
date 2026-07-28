@@ -9,6 +9,10 @@ export interface IComplaint extends Document {
   financialLoss: number;
   aiSummary?: string;
   pdfReportUrl?: string;
+  pdfData?: Buffer;
+  platform?: string;
+  suspectDetails?: string;
+  blockchainHash?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -21,7 +25,11 @@ const ComplaintSchema: Schema = new Schema({
   status: { type: String, enum: ['PENDING', 'UNDER_REVIEW', 'ACTION_TAKEN', 'CLOSED'], default: 'PENDING' },
   financialLoss: { type: Number, default: 0 },
   aiSummary: { type: String },
-  pdfReportUrl: { type: String }
+  pdfReportUrl: { type: String },
+  pdfData: { type: Buffer },
+  platform: { type: String },
+  suspectDetails: { type: String },
+  blockchainHash: { type: String }
 }, { timestamps: true });
 
 export default mongoose.model<IComplaint>('Complaint', ComplaintSchema);

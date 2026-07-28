@@ -7,13 +7,19 @@ import { Server } from 'socket.io';
 import authRoutes from './routes/authRoutes';
 import aiRoutes from './routes/aiRoutes';
 import emergencyRoutes from './routes/emergencyRoutes';
+import openphishRoutes from './routes/openphishRoutes';
+import complaintRoutes from './routes/complaintRoutes';
 import { initializeSocketService } from './services/socketService';
+import { startOpenPhishStreaming } from './services/openphishService';
 
 dotenv.config();
 
 const app = express();
 const httpServer = createServer(app);
 const io = initializeSocketService(httpServer);
+
+// Start OpenPhish stream
+startOpenPhishStreaming(io);
 
 app.use(cors());
 app.use(express.json());
@@ -22,6 +28,8 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/emergency', emergencyRoutes);
+app.use('/api/openphish', openphishRoutes);
+app.use('/api/complaints', complaintRoutes);
 
 // Socket.io for mock real-time threat streams
 io.on('connection', (socket) => {

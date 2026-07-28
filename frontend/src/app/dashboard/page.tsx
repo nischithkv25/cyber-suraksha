@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ShieldAlert, Activity, AlertTriangle, CheckCircle, 
   Map, BarChart3, TrendingUp, ShieldCheck 
@@ -10,6 +10,10 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   AreaChart, Area
 } from 'recharts';
+import { io } from 'socket.io-client';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005/api';
+const SOCKET_URL = API_URL.endsWith('/api') ? API_URL.slice(0, -4) : API_URL;
 
 const threatData = [
   { time: '00:00', threats: 12 },
@@ -23,13 +27,80 @@ const threatData = [
 
 export default function Dashboard() {
   const [threatScore, setThreatScore] = useState(87);
+  const [alerts, setAlerts] = useState<any[]>([]);
+  const [threatsBlocked, setThreatsBlocked] = useState(12450);
+  const [chartData, setChartData] = useState(threatData);
 
-  // Animate threat score on load
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setThreatScore(Math.floor(Math.random() * 20) + 75);
-    }, 2000);
-    return () => clearTimeout(timer);
+    // 1. Fetch initial OpenPhish threats from backend
+    const fetchInitialThreats = async () => {
+      try {
+        const res = await fetch(`${API_URL}/openphish`);
+        if (!res.ok) throw new Error('Failed to fetch OpenPhish threats');
+        const data = await res.json();
+        
+        const mappedThreats = data.map((threat: any) => ({
+          id: threat.id,
+          type: threat.severity,
+          msg: `Phishing domain active targeting ${threat.brand}`,
+          url: threat.url,
+          time: new Date(threat.timestamp).toLocaleTimeString()
+        }));
+
+        setAlerts(mappedThreats);
+      } catch (err) {
+        console.error('Error fetching initial OpenPhish threats:', err);
+        setAlerts([
+          { id: '1', type: 'CRITICAL', msg: "Mass SMS phishing detected targeting SBI users", time: "2 min ago" },
+          { id: '2', type: 'WARNING', msg: "Suspicious Telegram group identified", time: "15 min ago" },
+          { id: '3', type: 'SECURED', msg: "Fraudulent UPI ID frozen (₹1.2L recovered)", time: "42 min ago" },
+          { id: '4', type: 'WARNING', msg: "Fake customer care number reported 15x", time: "1 hr ago" }
+        ]);
+      }
+    };
+
+    fetchInitialThreats();
+
+    // 2. Connect to Socket.io for live updates
+    const socket = io(SOCKET_URL);
+
+    socket.on('connect', () => {
+      console.log('[SOCKET] Connected to Command Center stream');
+    });
+
+    socket.on('phishing-alert', (threat: any) => {
+      console.log('[SOCKET] Received threat:', threat);
+
+      setAlerts(prev => [
+        {
+          id: threat.id,
+          type: threat.severity,
+          msg: `Phishing domain active targeting ${threat.brand}`,
+          url: threat.url,
+          time: new Date(threat.timestamp).toLocaleTimeString()
+        },
+        ...prev.slice(0, 14) // Keep up to 15 intercepts
+      ]);
+
+      // Update counters and scores dynamically
+      setThreatsBlocked(prev => prev + 1);
+      setThreatScore(Math.floor(Math.random() * 15) + 80);
+
+      // Fluctuate chart data slightly
+      setChartData(prev => {
+        const newData = [...prev];
+        const lastIdx = newData.length - 1;
+        newData[lastIdx] = {
+          ...newData[lastIdx],
+          threats: newData[lastIdx].threats + 1
+        };
+        return newData;
+      });
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, []);
 
   return (
@@ -74,7 +145,7 @@ export default function Dashboard() {
 
         {/* Stats Cards */}
         <div className="md:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-6">
-          <StatCard title="THREATS BLOCKED" value="12,450" icon={<ShieldCheck className="text-green-400" size={24}/>} trend="+14%" color="green" />
+          <StatCard title="THREATS BLOCKED" value={threatsBlocked.toLocaleString()} icon={<ShieldCheck className="text-green-400" size={24}/>} trend="+14%" color="green" />
           <StatCard title="ACTIVE SCANS" value="3,211" icon={<Activity className="text-[#00f0ff]" size={24}/>} trend="+5%" color="blue" />
           <StatCard title="COMPLAINTS FILED" value="842" icon={<AlertTriangle className="text-[#b026ff]" size={24}/>} trend="-2%" color="purple" />
         </div>
@@ -94,7 +165,7 @@ export default function Dashboard() {
           </div>
           <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={threatData}>
+              <AreaChart data={chartData}>
                 <defs>
                   <linearGradient id="colorThreats" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#00f0ff" stopOpacity={0.3}/>
@@ -125,11 +196,18 @@ export default function Dashboard() {
             <h2 className="text-lg font-heading text-white">LIVE INTERCEPTS</h2>
             <Activity className="text-[#ff003c] animate-pulse" size={20} />
           </div>
-          <div className="space-y-4 flex-1 overflow-y-auto pr-2 custom-scrollbar">
-            <AlertItem type="CRITICAL" msg="Mass SMS phishing detected targeting SBI users" time="2 min ago" />
-            <AlertItem type="WARNING" msg="Suspicious Telegram group identified" time="15 min ago" />
-            <AlertItem type="SECURED" msg="Fraudulent UPI ID frozen (₹1.2L recovered)" time="42 min ago" />
-            <AlertItem type="WARNING" msg="Fake customer care number reported 15x" time="1 hr ago" />
+          <div className="space-y-4 flex-1 overflow-y-auto pr-2 custom-scrollbar flex flex-col">
+            <AnimatePresence initial={false}>
+              {alerts.map((alert) => (
+                <AlertItem 
+                  key={alert.id} 
+                  type={alert.type} 
+                  msg={alert.msg} 
+                  time={alert.time} 
+                  url={alert.url} 
+                />
+              ))}
+            </AnimatePresence>
           </div>
         </motion.div>
       </div>
@@ -159,7 +237,7 @@ function StatCard({ title, value, icon, trend, color }: any) {
   );
 }
 
-function AlertItem({ type, msg, time }: any) {
+function AlertItem({ type, msg, time, url }: any) {
   const getColors = () => {
     switch(type) {
       case 'CRITICAL': return 'border-red-500/30 text-red-400 bg-red-500/5';
@@ -170,12 +248,29 @@ function AlertItem({ type, msg, time }: any) {
   };
 
   return (
-    <div className={`p-3 border rounded-md flex flex-col gap-2 ${getColors()}`}>
+    <motion.div 
+      initial={{ opacity: 0, y: -20, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      transition={{ duration: 0.4 }}
+      className={`p-3 border rounded-md flex flex-col gap-2 ${getColors()} w-full`}
+    >
       <div className="flex justify-between items-center">
         <span className="text-xs font-bold font-mono tracking-wider">[{type}]</span>
-        <span className="text-xs opacity-60">{time}</span>
+        <span className="text-xs opacity-60 font-mono">{time}</span>
       </div>
       <p className="text-sm text-gray-300">{msg}</p>
-    </div>
+      {url && (
+        <a 
+          href={url} 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          className="text-xs text-[#00f0ff] hover:underline font-mono truncate block mt-1 hover:text-white transition-colors"
+          title={url}
+        >
+          {url}
+        </a>
+      )}
+    </motion.div>
   );
 }

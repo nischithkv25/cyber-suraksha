@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShieldAlert, Phone, CreditCard, Lock, Smartphone, FileText, CheckCircle, ArrowRight, X, AlertTriangle } from 'lucide-react';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005/api';
+
 export default function EmergencyReportPage() {
   const [step, setStep] = useState(1);
   const [incidentType, setIncidentType] = useState('');
@@ -44,17 +46,46 @@ export default function EmergencyReportPage() {
     setActiveAction(action);
   };
 
-  const handleSimulateUpload = () => {
+  const handleSimulateUpload = async () => {
     setIsUploading(true);
-    setTimeout(() => {
-      setIsUploading(false);
+    try {
+      const finalType = incidentType === 'Other' ? customIncidentType : incidentType;
+      const token = localStorage.getItem('token');
+      
+      const res = await fetch(`${API_URL}/complaints`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          incidentType: finalType,
+          description: description || `Emergency report for ${finalType}`,
+          dateOfIncident: incidentDate || new Date().toISOString().split('T')[0],
+          financialLoss: Number(financialLoss) || 0,
+          platform: platform || 'Web',
+          suspectDetails: suspectDetails || 'Not specified'
+        })
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Failed to file complaint');
+      }
+
+      const data = await res.json();
       setGeneratedComplaint({
-        id: 'CYB-FIR-' + Math.floor(100000 + Math.random() * 900000),
-        hash: '0x' + Array.from({length: 40}, () => Math.floor(Math.random()*16).toString(16)).join(''),
-        timestamp: new Date().toLocaleString()
+        id: data.complaint._id,
+        hash: data.complaint.blockchainHash,
+        timestamp: new Date(data.complaint.createdAt).toLocaleString()
       });
       setStep(4);
-    }, 2500);
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message || 'Error occurred while saving complaint to database.');
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleGovtSync = () => {
@@ -289,6 +320,16 @@ export default function EmergencyReportPage() {
                     >
                       <ShieldAlert size={18} /> AUTO-FILE (MOCK API)
                     </button>
+                    {generatedComplaint?.id && (
+                      <button 
+                        onClick={() => {
+                          window.open(`${API_URL}/complaints/${generatedComplaint.id}/pdf`, '_blank');
+                        }}
+                        className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-6 rounded flex items-center gap-2 w-full sm:w-auto justify-center"
+                      >
+                        <FileText size={18} /> DOWNLOAD OFFICIAL PDF
+                      </button>
+                    )}
                     <button onClick={() => setStep(1)} className="border border-gray-600 hover:bg-gray-800 text-white font-bold py-2 px-6 rounded w-full sm:w-auto mt-2 sm:mt-0">
                       RESET
                     </button>
