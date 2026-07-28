@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { UploadCloud, ShieldAlert, Scan, CheckCircle, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { UploadCloud, ShieldAlert, Scan, CheckCircle, ShieldCheck, AlertTriangle, FileText } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005/api';
@@ -13,23 +13,18 @@ export default function AIScanPage() {
   const [url, setUrl] = useState('');
   const [isScanning, setIsScanning] = useState(false);
   const [result, setResult] = useState<any>(null);
-  const [countdown, setCountdown] = useState<number | null>(null);
 
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (countdown !== null && countdown > 0) {
-      timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-    } else if (countdown === 0) {
-      router.push('/report');
-    }
-    return () => clearTimeout(timer);
-  }, [countdown, router]);
+  // Auto-filing complaint states
+  const [isFiling, setIsFiling] = useState(false);
+  const [filedComplaint, setFiledComplaint] = useState<{ id: string; hash: string } | null>(null);
 
   const handleScan = async () => {
     if (!file && !url) return;
     
     setIsScanning(true);
     setResult(null);
+    setFiledComplaint(null);
+    setIsFiling(false);
     
     try {
       let res;
@@ -58,8 +53,49 @@ export default function AIScanPage() {
       const data = await res.json();
       setResult(data);
 
+      // Auto-file complaint if high threat detected
       if (data.threatScore > 50) {
-        setCountdown(6);
+        setIsFiling(true);
+        try {
+          const token = localStorage.getItem('token');
+          let classificationType = 'Online Fraud';
+          if (data.classification === 'PHISHING_SCAM') classificationType = 'Phishing';
+          else if (data.classification === 'UPI_IMPERSONATION') classificationType = 'UPI Fraud';
+          else if (data.classification === 'SUPPORT_SCAM') classificationType = 'Impersonation Scam';
+          else if (data.classification === 'LOTTERY_FRAUD') classificationType = 'Lottery Scam';
+
+          const complaintDescription = `Auto-filed by AI Scam Detection Engine.\nThreat Score: ${data.threatScore}/100\nConfidence: ${data.confidence}%\n\nScanned Source: ${url || file?.name || 'Evidence screenshot'}\n\nIdentified Threat Indicators:\n${data.details.map((d: string) => `- ${d}`).join('\n')}`;
+
+          const fileRes = await fetch(`${API_URL}/complaints`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+            },
+            body: JSON.stringify({
+              incidentType: classificationType,
+              description: complaintDescription,
+              dateOfIncident: new Date().toISOString().split('T')[0],
+              financialLoss: 0,
+              platform: url ? 'Web' : 'Evidence Upload',
+              suspectDetails: url || file?.name || 'Not specified'
+            })
+          });
+
+          if (fileRes.ok) {
+            const fileData = await fileRes.json();
+            setFiledComplaint({
+              id: fileData.complaint._id,
+              hash: fileData.complaint.blockchainHash
+            });
+          } else {
+            console.error('Failed to auto-file complaint.');
+          }
+        } catch (fileErr) {
+          console.error('Error auto-filing complaint:', fileErr);
+        } finally {
+          setIsFiling(false);
+        }
       }
     } catch (err: any) {
       console.error('Scan error:', err);
@@ -128,7 +164,7 @@ export default function AIScanPage() {
         </div>
 
         {/* Results Section */}
-        <div className="relative">
+        <div className="relative font-sans">
           <AnimatePresence>
             {!result && !isScanning && (
               <motion.div 
@@ -159,27 +195,27 @@ export default function AIScanPage() {
             {result && !isScanning && (
               <motion.div 
                 initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-                className={`absolute inset-0 glass-panel p-6 overflow-y-auto ${result.threatScore > 80 ? 'border-red-500/50 bg-red-500/5' : 'border-green-500/50 bg-green-500/5'}`}
+                className={`absolute inset-0 glass-panel p-6 overflow-y-auto ${result.threatScore > 50 ? 'border-red-500/50 bg-red-500/5' : 'border-green-500/50 bg-green-500/5'}`}
               >
                 <div className="flex justify-between items-start mb-6 border-b border-gray-800 pb-4">
                   <div>
                     <h3 className="font-heading text-xl text-white">ANALYSIS COMPLETE</h3>
-                    <p className={`font-mono text-sm ${result.threatScore > 80 ? 'text-red-400' : 'text-green-400'}`}>
+                    <p className={`font-mono text-sm ${result.threatScore > 50 ? 'text-red-400' : 'text-green-400'}`}>
                       {result.classification} DETECTED
                     </p>
                   </div>
-                  <div className={`p-3 rounded-full ${result.threatScore > 80 ? 'bg-red-500/20' : 'bg-green-500/20'}`}>
-                    {result.threatScore > 80 ? <ShieldAlert className="text-red-500" size={32} /> : <ShieldCheck className="text-green-500" size={32} />}
+                  <div className={`p-3 rounded-full ${result.threatScore > 50 ? 'bg-red-500/20' : 'bg-green-500/20'}`}>
+                    {result.threatScore > 50 ? <ShieldAlert className="text-red-500" size={32} /> : <ShieldCheck className="text-green-500" size={32} />}
                   </div>
                 </div>
 
                 <div className="mb-8">
                   <div className="flex justify-between text-sm mb-2 font-mono">
                     <span className="text-gray-400">THREAT SCORE</span>
-                    <span className={result.threatScore > 80 ? 'text-red-500 font-bold' : 'text-green-500 font-bold'}>{result.threatScore}/100</span>
+                    <span className={result.threatScore > 50 ? 'text-red-500 font-bold' : 'text-green-500 font-bold'}>{result.threatScore}/100</span>
                   </div>
                   <div className="w-full bg-gray-900 rounded-full h-3">
-                    <div className={`h-3 rounded-full ${result.threatScore > 80 ? 'bg-red-500' : 'bg-green-500'}`} style={{ width: `${result.threatScore}%` }}></div>
+                    <div className={`h-3 rounded-full ${result.threatScore > 50 ? 'bg-red-500' : 'bg-green-500'}`} style={{ width: `${result.threatScore}%` }}></div>
                   </div>
                 </div>
 
@@ -194,13 +230,50 @@ export default function AIScanPage() {
                 </div>
 
                 <div className="mt-8 pt-4 border-t border-gray-800">
-                  <button onClick={() => router.push('/report')} className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-md transition-all flex items-center justify-center gap-2">
-                    <ShieldAlert size={18} /> GENERATE OFFICIAL COMPLAINT
-                  </button>
-                  {countdown !== null && (
-                    <p className="text-center text-xs text-red-400 mt-3 font-mono animate-pulse">
-                      Auto-redirecting to complaint generator in {countdown}s...
-                    </p>
+                  {result.threatScore > 50 ? (
+                    filedComplaint ? (
+                      <div className="space-y-3">
+                        <div className="p-4 border border-green-500/30 bg-green-500/10 rounded-md">
+                          <h5 className="text-green-400 font-bold flex items-center gap-2 mb-2">
+                            <CheckCircle size={18} /> COMPLAINT AUTO-FILED SUCCESSFULLY
+                          </h5>
+                          <div className="space-y-2 text-xs font-mono text-gray-300">
+                            <div>
+                              <span className="text-gray-400">COMPLAINT ID:</span>{' '}
+                              <span className="text-white">{filedComplaint.id}</span>
+                            </div>
+                            <div>
+                              <span className="text-gray-400">BLOCKCHAIN HASH:</span>{' '}
+                              <span className="text-emerald-400 break-all">{filedComplaint.hash}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <a
+                          href={`${API_URL}/complaints/${filedComplaint.id}/pdf`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold py-3 rounded-md transition-all flex items-center justify-center gap-2 text-center"
+                        >
+                          <FileText size={18} /> DOWNLOAD OFFICIAL PDF
+                        </a>
+                      </div>
+                    ) : isFiling ? (
+                      <div className="p-4 border border-[#00f0ff]/30 bg-[#00f0ff]/10 rounded-md text-center">
+                        <p className="text-[#00f0ff] font-mono text-sm tracking-wider animate-pulse">
+                          SECURING EVIDENCE ON BLOCKCHAIN & AUTO-FILING COMPLAINT...
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="text-center text-xs text-red-400 font-mono">
+                        Failed to auto-file complaint. Please file manually.
+                      </p>
+                    )
+                  ) : (
+                    <div className="p-4 border border-green-500/30 bg-green-500/10 rounded-md text-center">
+                      <p className="text-green-400 font-mono text-sm">
+                        Verified Secure. No malicious threat indicators detected.
+                      </p>
+                    </div>
                   )}
                 </div>
               </motion.div>
