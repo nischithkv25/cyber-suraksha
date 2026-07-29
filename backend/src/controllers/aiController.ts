@@ -78,6 +78,44 @@ export const getChatbotResponse = async (req: Request, res: Response): Promise<v
       return;
     }
 
+    // Connect to ChatGPT if API key is provided
+    if (process.env.OPENAI_API_KEY) {
+      try {
+        const systemPrompt = isKn
+          ? `ನೀವು ಸೈಬರ್ ಸುರಕ್ಷಾ (Cyber Suraksha) ವೇದಿಕೆಯ ಅಧಿಕೃತ ಸೈಬರ್ ಭದ್ರತಾ ಸಹಾಯಕ. ಬಳಕೆದಾರರು ಸೈಬರ್ ವಂಚನೆಗಳು, ಹ್ಯಾಕಿಂಗ್, ಯುಪಿಐ ವಂಚನೆಗಳು, ಒಟಿಪಿ ಫಿಶಿಂಗ್ ಮತ್ತು ಲೈಂಗಿಕ ಬ್ಲ್ಯಾಕ್‌ಮೇಲ್ ಬಗ್ಗೆ ಕೇಳುತ್ತಾರೆ. ನೀವು ಅವರ ಪ್ರಶ್ನೆಗಳಿಗೆ ಸಂಕ್ಷಿಪ್ತವಾಗಿ, ಸಹಾನುಭೂತಿಯಿಂದ ಮತ್ತು ನಿಖರವಾಗಿ ಕನ್ನಡದಲ್ಲಿ ಉತ್ತರಿಸಬೇಕು. ಅಧಿಕೃತ ಸಹಾಯವಾಣಿ 1930 ಅನ್ನು ಬಳಸಲು ಸಲಹೆ ನೀಡಿ.`
+          : `You are Cyber Suraksha AI, a specialized cyber security response assistant for Indian cyber safety. Users will ask about online scams, UPI fraud, phishing, OTP leaks, and digital safety. Give concise, actionable, and comforting advice. Keep responses under 3-4 sentences. Always recommend contacting the National Cyber Helpline at 1930 if they have lost money.`;
+
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+          },
+          body: JSON.stringify({
+            model: 'gpt-3.5-turbo',
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: message }
+            ],
+            temperature: 0.7
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const chatgptReply = data.choices?.[0]?.message?.content;
+          if (chatgptReply) {
+            res.status(200).json({ response: chatgptReply });
+            return;
+          }
+        } else {
+          console.warn('[OPENAI-API] OpenAI response status not OK:', response.status);
+        }
+      } catch (err) {
+        console.error('[OPENAI-API] Error calling OpenAI API:', err);
+      }
+    }
+
     // Call standard threat heuristic engine
     const evaluation = analyzeThreatContent(content);
 
