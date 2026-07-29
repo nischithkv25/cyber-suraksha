@@ -4,10 +4,117 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ShieldAlert, MessageSquare, Heart, Search, Plus, X, 
-  Calendar, DollarSign, Filter, BookOpen, AlertTriangle, ArrowRight, UserCheck, EyeOff, User
+  Calendar, DollarSign, Filter, BookOpen, AlertTriangle, ArrowRight, UserCheck, EyeOff, User, Languages
 } from 'lucide-react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005/api';
+
+type Language = 'en' | 'kn';
+
+const translations = {
+  en: {
+    pageTitle: "CITIZEN SHIELD STORY BOARD",
+    pageSubtitle: "Karnataka Cyber Defense Grid - Citizen Warning Forum",
+    shareBtn: "SHARE YOUR STORY",
+    warningHeader: "CRITICAL WARNING FOR CITIZENS",
+    warningBody: "Scammers are heavily using \"Part-time Job Offers\" via WhatsApp and Telegram. Never pay money upfront for completing \"tasks\" or to unlock money. Treat all unsolicited UPI/OTP requests as high risk.",
+    searchPlaceholder: "Search keyword (e.g. WhatsApp, refund, SBI)...",
+    searchBtn: "SEARCH",
+    allScamTypes: "All Scam Types",
+    upiFraud: "UPI Fraud",
+    otpScam: "OTP Scam",
+    phishingLink: "Phishing Link",
+    fakeCustomerCare: "Fake Customer Care",
+    jobOffer: "Job Offer",
+    whatsappScam: "WhatsApp Scam",
+    other: "Other",
+    newest: "Newest First",
+    mostAlerted: "Most Alerted (Likes)",
+    highestLoss: "Highest Financial Loss",
+    oldest: "Oldest First",
+    loadingStories: "LOADING STORIES...",
+    noStories: "NO STORIES FOUND",
+    noStoriesDesc: "Be the first to share your experience and warn others about new scam methods.",
+    shareExperienceBtn: "SHARE AN EXPERIENCE",
+    loss: "Loss: ₹",
+    sharedBy: "Shared by: ",
+    upvotes: "likes",
+    comments: "comments",
+    shareCompromiseHeader: "SHARE COMPROMISE EXPERIENCE",
+    scamTitleLabel: "SCAM METHOD / TITLE",
+    scamTitlePlaceholder: "e.g. WhatsApp Job Scam asking for money task",
+    scamTypeLabel: "SCAM TYPE",
+    lossLabel: "FINANCIAL LOSS (INR, OPTIONAL)",
+    howHappenLabel: "HOW DID IT HAPPEN? (BE DETAILED TO INFORM OTHERS)",
+    howHappenPlaceholder: "Provide details on step-by-step occurrence: messages received, links clicked, phone numbers, warning signs you missed, or how you protected yourself.",
+    postAnonLabel: "Post Anonymously",
+    aliasLabel: "ALIAS NAME (OPTIONAL)",
+    authorLabel: "AUTHOR NAME",
+    publishBtn: "PUBLISH STORY TO BOARD",
+    publishingBtn: "PUBLISHING REPORT...",
+    commentsHeader: "CITIZEN WARNINGS & RESPONSES",
+    noComments: "No warning comments yet. Have advice or query? Let the community know.",
+    addCommentHeader: "ADD ADVICE OR WARNING COMMENT",
+    commentPlaceholder: "Provide advice, warning tips, or question...",
+    namePlaceholder: "Your Name (optional)",
+    postCommentBtn: "POST COMMENT",
+    upvoteAlertBtn: "UPVOTE ALERT",
+    upvoteAlertDesc: "Upvote this alert if you found this informative or have observed a similar fraud attempt. Helps push the story to citizen tickers.",
+    postingCommentBtn: "POSTING...",
+    anonymousCitizen: "Anonymous Citizen"
+  },
+  kn: {
+    pageTitle: "ನಾಗರಿಕ ರಕ್ಷಣೆ ಸ್ಟೋರಿ ಬೋರ್ಡ್",
+    pageSubtitle: "ಕರ್ನಾಟಕ ಸೈಬರ್ ರಕ್ಷಣಾ ಗ್ರಿಡ್ - ನಾಗರಿಕ ಎಚ್ಚರಿಕೆ ವೇದಿಕೆ",
+    shareBtn: "ನಿಮ್ಮ ಕಥೆ ಹಂಚಿಕೊಳ್ಳಿ",
+    warningHeader: "ನಾಗರಿಕರಿಗೆ ಪ್ರಮುಖ ಎಚ್ಚರಿಕೆ",
+    warningBody: "ವಂಚಕರು ವಾಟ್ಸಾಪ್ ಮತ್ತು ಟೆಲಿಗ್ರಾಮ್ ಮೂಲಕ 'ಅರೆಕಾಲಿಕ ಉದ್ಯೋಗ ಕೊಡುಗೆಗಳನ್ನು' ಹೆಚ್ಚಾಗಿ ಬಳಸುತ್ತಿದ್ದಾರೆ. 'ಕೆಲಸ ಪೂರ್ಣಗೊಳಿಸಲು' ಅಥವಾ ಹಣ ಬಿಡುಗಡೆ ಮಾಡಲು ಎಂದಿಗೂ ಮುಂಗಡ ಹಣ ಪಾವತಿಸಬೇಡಿ. ಎಲ್ಲಾ ಅಪರಿಚಿತ UPI/OTP ವಿನಂತಿಗಳನ್ನು ಅಪಾಯಕಾರಿ ಎಂದು ಪರಿಗಣಿಸಿ.",
+    searchPlaceholder: "ಹುಡುಕಾಟ ಪದಗುಚ್ಛ (ಉದಾ. ವಾಟ್ಸಾಪ್, ಮರುಪಾವತಿ, SBI)...",
+    searchBtn: "ಹುಡುಕಿ",
+    allScamTypes: "ಎಲ್ಲಾ ಹಗರಣಗಳು",
+    upiFraud: "ಯುಪಿಐ ವಂಚನೆ",
+    otpScam: "ಒಟಿಪಿ ಹಗರಣ",
+    phishingLink: "ಫಿಶಿಂಗ್ ಲಿಂಕ್",
+    fakeCustomerCare: "ನಕಲಿ ಗ್ರಾಹಕ ಸೇವೆ",
+    jobOffer: "ಉದ್ಯೋಗ ಕೊಡುಗೆ",
+    whatsappScam: "ವಾಟ್ಸಾಪ್ ವಂಚನೆ",
+    other: "ಇತರೆ",
+    newest: "ಹೊಸದು ಮೊದಲು",
+    mostAlerted: "ಹೆಚ್ಚು ಲೈಕ್ಸ್ ಪಡೆದದ್ದು",
+    highestLoss: "ಹೆಚ್ಚಿನ ಆರ್ಥಿಕ ನಷ್ಟ",
+    oldest: "ಹಳೆಯದು ಮೊದಲು",
+    loadingStories: "ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ...",
+    noStories: "ಯಾವುದೇ ಕಥೆಗಳು ಕಂಡುಬಂದಿಲ್ಲ",
+    noStoriesDesc: "ಹೊಸ ಹಗರಣಗಳ ವಿಧಾನಗಳ ಬಗ್ಗೆ ಇತರರಿಗೆ ಎಚ್ಚರಿಕೆ ನೀಡಲು ನಿಮ್ಮ ಅನುಭವವನ್ನು ಹಂಚಿಕೊಳ್ಳುವ ಮೊದಲ ವ್ಯಕ್ತಿಯಾಗಿರಿ.",
+    shareExperienceBtn: "ನಿಮ್ಮ ಅನುಭವ ಹಂಚಿಕೊಳ್ಳಿ",
+    loss: "ನಷ್ಟ: ₹",
+    sharedBy: "ಹಂಚಿಕೊಂಡವರು: ",
+    upvotes: "ಲೈಕ್ಸ್",
+    comments: "ಕಾಮೆಂಟ್‌ಗಳು",
+    shareCompromiseHeader: "ನಿಮ್ಮ ಹಗರಣದ ಅನುಭವವನ್ನು ಹಂಚಿಕೊಳ್ಳಿ",
+    scamTitleLabel: "ಹಗರಣದ ಶೀರ್ಷಿಕೆ / ಹೆಸರು",
+    scamTitlePlaceholder: "ಉದಾ. ವಾಟ್ಸಾಪ್ ಕೆಲಸದ ಹಗರಣ ಹಣಕ್ಕಾಗಿ ಬೇಡಿಕೆ",
+    scamTypeLabel: "ಹಗರಣದ ವಿಧ",
+    lossLabel: "ಹಣಕಾಸು ನಷ್ಟ (ರೂಪಾಯಿಗಳಲ್ಲಿ, ಐಚ್ಛಿಕ)",
+    howHappenLabel: "ಇದು ಹೇಗೆ ಸಂಭವಿಸಿತು? (ಇತರರಿಗೆ ತಿಳಿಸಲು ವಿವರವಾಗಿ ಬರೆಯಿರಿ)",
+    howHappenPlaceholder: "ಹಂತ-ಹಂತದ ವಿವರಗಳನ್ನು ಒದಗಿಸಿ: ಬಂದ ಸಂದೇಶಗಳು, ಕ್ಲಿಕ್ ಮಾಡಿದ ಲಿಂಕ್‌ಗಳು, ದೂರವಾಣಿ ಸಂಖ್ಯೆಗಳು, ನೀವು ಗಮನಿಸದ ಎಚ್ಚರಿಕೆಗಳು, ಅಥವಾ ನಿಮ್ಮನ್ನು ನೀವು ಹೇಗೆ ರಕ್ಷಿಸಿಕೊಂಡಿದ್ದೀರಿ.",
+    postAnonLabel: "ಅನಾಮಧೇಯವಾಗಿ ಪೋಸ್ಟ್ ಮಾಡಿ",
+    aliasLabel: "ಅಡ್ಡ ಹೆಸರು (ಐಚ್ಛಿಕ)",
+    authorLabel: "ಲೇಖಕರ ಹೆಸರು",
+    publishBtn: "ಬೋರ್ಡ್‌ನಲ್ಲಿ ಪ್ರಕಟಿಸಿ",
+    publishingBtn: "ಪ್ರಕಟಿಸಲಾಗುತ್ತಿದೆ...",
+    commentsHeader: "ನಾಗರಿಕ ಎಚ್ಚರಿಕೆಗಳು ಮತ್ತು ಪ್ರತಿಕ್ರಿಯೆಗಳು",
+    noComments: "ಇನ್ನೂ ಯಾವುದೇ ಕಾಮೆಂಟ್‌ಗಳಿಲ್ಲ. ಸಲಹೆ ಅಥವಾ ಪ್ರಶ್ನೆಗಳಿವೆಯೇ? ಸಮುದಾಯಕ್ಕೆ ತಿಳಿಸಿ.",
+    addCommentHeader: "ಸಲಹೆ ಅಥವಾ ಎಚ್ಚರಿಕೆಯ ಕಾಮೆಂಟ್ ಸೇರಿಸಿ",
+    commentPlaceholder: "ಸಲಹೆ, ಎಚ್ಚರಿಕೆಯ ಸಲಹೆಗಳು ಅಥವಾ ಪ್ರಶ್ನೆಯನ್ನು ಬರೆಯಿರಿ...",
+    namePlaceholder: "ನಿಮ್ಮ ಹೆಸರು (ಐಚ್ಛಿಕ)",
+    postCommentBtn: "ಕಾಮೆಂಟ್ ಪೋಸ್ಟ್ ಮಾಡಿ",
+    upvoteAlertBtn: "ಅಲರ್ಟ್ ವೋಟ್ ಮಾಡಿ",
+    upvoteAlertDesc: "ಈ ಎಚ್ಚರಿಕೆಯು ನಿಮಗೆ ಉಪಯುಕ್ತವಾಗಿದ್ದರೆ ಅಥವಾ ಇದೇ ರೀತಿಯ ವಂಚನೆಯನ್ನು ಗಮನಿಸಿದ್ದರೆ ಅಪ್‌ವೋಟ್ ಮಾಡಿ. ಇದು ಕಥೆಯನ್ನು ನಾಗರಿಕರ ಟಿಕ್ಕರ್‌ಗಳಿಗೆ ತಳ್ಳಲು ಸಹಾಯ ಮಾಡುತ್ತದೆ.",
+    postingCommentBtn: "ಪೋಸ್ಟ್ ಮಾಡಲಾಗುತ್ತಿದೆ...",
+    anonymousCitizen: "ಅನಾಮಧೇಯ ನಾಗರಿಕ"
+  }
+};
 
 interface Comment {
   _id?: string;
@@ -38,6 +145,7 @@ export default function StoryBoardPage() {
   const [sortBy, setSortBy] = useState('newest');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [lang, setLang] = useState<Language>('en');
 
   // Modals state
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
@@ -70,7 +178,18 @@ export default function StoryBoardPage() {
         setCurrentUser(null);
       }
     }
+
+    // Read language preference from localStorage
+    const storedLang = localStorage.getItem('preferredLang');
+    if (storedLang === 'en' || storedLang === 'kn') {
+      setLang(storedLang);
+    }
   }, []);
+
+  const handleLanguageChange = (newLang: Language) => {
+    setLang(newLang);
+    localStorage.setItem('preferredLang', newLang);
+  };
 
   const fetchStories = async () => {
     setLoading(true);
@@ -150,7 +269,7 @@ export default function StoryBoardPage() {
         scamType: newScamType,
         financialLoss: Number(newLoss) || 0,
         isAnonymous,
-        customAuthorName: isAnonymous ? (customName.trim() || 'Anonymous Citizen') : (customName.trim() || currentUser?.name || 'Anonymous Citizen')
+        customAuthorName: isAnonymous ? (customName.trim() || t('anonymousCitizen')) : (customName.trim() || currentUser?.name || t('anonymousCitizen'))
       };
 
       const res = await fetch(`${API_URL}/stories`, {
@@ -204,7 +323,7 @@ export default function StoryBoardPage() {
         },
         body: JSON.stringify({
           commentText,
-          customAuthorName: commentAuthor.trim() || currentUser?.name || 'Anonymous Citizen'
+          customAuthorName: commentAuthor.trim() || currentUser?.name || t('anonymousCitizen')
         })
       });
 
@@ -232,6 +351,24 @@ export default function StoryBoardPage() {
     }
   };
 
+  const t = (key: keyof typeof translations['en']) => {
+    return translations[lang][key] || translations['en'][key];
+  };
+
+  const getScamTypeTranslation = (type: string) => {
+    if (lang === 'en') return type;
+    switch (type) {
+      case 'UPI Fraud': return 'ಯುಪಿಐ ವಂಚನೆ';
+      case 'OTP Scam': return 'ಒಟಿಪಿ ಹಗರಣ';
+      case 'Phishing Link': return 'ಫಿಶಿಂಗ್ ಲಿಂಕ್';
+      case 'Fake Customer Care': return 'ನಕಲಿ ಗ್ರಾಹಕ ಸೇವೆ';
+      case 'Job Offer': return 'ಉದ್ಯೋಗ ಕೊಡುಗೆ';
+      case 'WhatsApp Scam': return 'ವಾಟ್ಸಾಪ್ ವಂಚನೆ';
+      case 'Other': return 'ಇತರೆ';
+      default: return type;
+    }
+  };
+
   const getScamTypeStyles = (type: string) => {
     switch (type) {
       case 'UPI Fraud': return 'border-[#00f0ff]/30 text-[#00f0ff] bg-[#00f0ff]/5';
@@ -251,25 +388,47 @@ export default function StoryBoardPage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 border-b border-[#b026ff]/30 pb-6">
         <div>
           <h1 className="text-3xl font-heading font-bold text-white tracking-wide">
-            CITIZEN SHIELD STORY BOARD
+            {t('pageTitle')}
           </h1>
-          <p className="text-[#b026ff] font-mono text-sm">Karnataka Cyber Defense Grid - Citizen Warning Forum</p>
+          <p className="text-[#b026ff] font-mono text-sm">{t('pageSubtitle')}</p>
         </div>
-        <button 
-          onClick={() => setIsShareModalOpen(true)}
-          className="bg-[#b026ff] hover:bg-[#b026ff]/80 text-white font-bold py-3 px-6 rounded-md transition-all flex items-center gap-2 shadow-[0_0_15px_rgba(176,38,255,0.4)]"
-        >
-          <Plus size={18} /> SHARE YOUR STORY
-        </button>
+
+        <div className="flex items-center gap-4">
+          {/* Language Switcher */}
+          <div className="flex bg-black/40 border border-gray-800 rounded p-1 items-center gap-1">
+            <Languages size={14} className="text-gray-500 ml-2" />
+            <button 
+              id="lang-en-btn"
+              onClick={() => handleLanguageChange('en')}
+              className={`px-3 py-1 text-xs font-mono rounded transition-all ${lang === 'en' ? 'bg-[#b026ff] text-white shadow-[0_0_8px_rgba(176,38,255,0.4)]' : 'text-gray-400 hover:text-white'}`}
+            >
+              ENGLISH
+            </button>
+            <button 
+              id="lang-kn-btn"
+              onClick={() => handleLanguageChange('kn')}
+              className={`px-3 py-1 text-xs font-mono rounded transition-all ${lang === 'kn' ? 'bg-[#b026ff] text-white shadow-[0_0_8px_rgba(176,38,255,0.4)]' : 'text-gray-400 hover:text-white'}`}
+            >
+              ಕನ್ನಡ
+            </button>
+          </div>
+
+          <button 
+            onClick={() => setIsShareModalOpen(true)}
+            className="bg-[#b026ff] hover:bg-[#b026ff]/80 text-white font-bold py-3 px-6 rounded-md transition-all flex items-center gap-2 shadow-[0_0_15px_rgba(176,38,255,0.4)]"
+          >
+            <Plus size={18} /> {t('shareBtn')}
+          </button>
+        </div>
       </div>
 
       {/* Cyber Warning Alert Ticker */}
       <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-md mb-8 flex items-start gap-3">
         <ShieldAlert className="text-red-500 shrink-0 mt-0.5 animate-pulse" size={20} />
         <div>
-          <h4 className="text-sm font-bold text-white font-heading">CRITICAL WARNING FOR CITIZENS</h4>
+          <h4 className="text-sm font-bold text-white font-heading">{t('warningHeader')}</h4>
           <p className="text-xs text-gray-400 mt-1 leading-relaxed">
-            Scammers are heavily using "Part-time Job Offers" via WhatsApp and Telegram. Never pay money upfront for completing "tasks" or to unlock money. Treat all unsolicited UPI/OTP requests as high risk.
+            {t('warningBody')}
           </p>
         </div>
       </div>
@@ -281,14 +440,14 @@ export default function StoryBoardPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
             <input 
               type="text" 
-              placeholder="Search keyword (e.g. WhatsApp, refund, SBI)..."
+              placeholder={t('searchPlaceholder')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full bg-black/40 border border-gray-800 rounded p-2.5 pl-10 text-white focus:border-[#00f0ff] outline-none" 
             />
           </div>
           <button type="submit" className="bg-[#00f0ff]/10 hover:bg-[#00f0ff]/20 text-[#00f0ff] border border-[#00f0ff] px-5 py-2.5 font-bold transition-all">
-            SEARCH
+            {t('searchBtn')}
           </button>
         </form>
 
@@ -301,14 +460,14 @@ export default function StoryBoardPage() {
               onChange={(e) => setScamType(e.target.value)}
               className="w-full sm:w-44 bg-black/40 border border-gray-800 rounded p-2.5 text-white focus:border-[#00f0ff] outline-none"
             >
-              <option value="All">All Scam Types</option>
-              <option value="UPI Fraud">UPI Fraud</option>
-              <option value="OTP Scam">OTP Scam</option>
-              <option value="Phishing Link">Phishing Link</option>
-              <option value="Fake Customer Care">Fake Customer Care</option>
-              <option value="Job Offer">Job Offer</option>
-              <option value="WhatsApp Scam">WhatsApp Scam</option>
-              <option value="Other">Other</option>
+              <option value="All">{t('allScamTypes')}</option>
+              <option value="UPI Fraud">{t('upiFraud')}</option>
+              <option value="OTP Scam">{t('otpScam')}</option>
+              <option value="Phishing Link">{t('phishingLink')}</option>
+              <option value="Fake Customer Care">{t('fakeCustomerCare')}</option>
+              <option value="Job Offer">{t('jobOffer')}</option>
+              <option value="WhatsApp Scam">{t('whatsappScam')}</option>
+              <option value="Other">{t('other')}</option>
             </select>
           </div>
 
@@ -318,10 +477,10 @@ export default function StoryBoardPage() {
             onChange={(e) => setSortBy(e.target.value)}
             className="w-full sm:w-44 bg-black/40 border border-gray-800 rounded p-2.5 text-white focus:border-[#00f0ff] outline-none"
           >
-            <option value="newest">Newest First</option>
-            <option value="likes">Most Alerted (Likes)</option>
-            <option value="financialLoss">Highest Financial Loss</option>
-            <option value="oldest">Oldest First</option>
+            <option value="newest">{t('newest')}</option>
+            <option value="likes">{t('mostAlerted')}</option>
+            <option value="financialLoss">{t('highestLoss')}</option>
+            <option value="oldest">{t('oldest')}</option>
           </select>
         </div>
       </div>
@@ -330,7 +489,7 @@ export default function StoryBoardPage() {
       {loading ? (
         <div className="py-24 text-center">
           <div className="w-12 h-12 border-4 border-gray-700 border-t-[#b026ff] rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-400 font-mono">LOADING STORIES...</p>
+          <p className="text-gray-400 font-mono">{t('loadingStories')}</p>
         </div>
       ) : error ? (
         <div className="py-12 text-center text-red-400 bg-red-950/20 border border-red-900 rounded-md">
@@ -340,13 +499,13 @@ export default function StoryBoardPage() {
       ) : stories.length === 0 ? (
         <div className="py-24 text-center glass-panel border-gray-800">
           <BookOpen className="text-gray-600 mx-auto mb-4" size={48} />
-          <h3 className="text-xl text-white mb-2 font-heading">NO STORIES FOUND</h3>
-          <p className="text-gray-400 max-w-sm mx-auto mb-6">Be the first to share your experience and warn others about new scam methods.</p>
+          <h3 className="text-xl text-white mb-2 font-heading">{t('noStories')}</h3>
+          <p className="text-gray-400 max-w-sm mx-auto mb-6">{t('noStoriesDesc')}</p>
           <button 
             onClick={() => setIsShareModalOpen(true)}
             className="border border-[#b026ff] text-[#b026ff] hover:bg-[#b026ff]/10 font-bold px-6 py-2.5 rounded transition-all"
           >
-            SHARE AN EXPERIENCE
+            {t('shareExperienceBtn')}
           </button>
         </div>
       ) : (
@@ -361,11 +520,11 @@ export default function StoryBoardPage() {
               <div>
                 <div className="flex justify-between items-start mb-4 gap-2">
                   <span className={`px-2.5 py-1 text-xs font-mono border rounded ${getScamTypeStyles(story.scamType)}`}>
-                    {story.scamType}
+                    {getScamTypeTranslation(story.scamType)}
                   </span>
                   {story.financialLoss > 0 && (
                     <span className="text-xs font-mono text-red-400 font-bold">
-                      Loss: ₹{story.financialLoss.toLocaleString()}
+                      {t('loss')}{story.financialLoss.toLocaleString()}
                     </span>
                   )}
                 </div>
@@ -420,7 +579,7 @@ export default function StoryBoardPage() {
             >
               <div className="flex justify-between items-center mb-6 border-b border-gray-800 pb-3">
                 <h2 className="text-xl font-heading text-[#b026ff] flex items-center gap-2">
-                  <Plus /> SHARE COMPROMISE EXPERIENCE
+                  <Plus /> {t('shareCompromiseHeader')}
                 </h2>
                 <button onClick={() => setIsShareModalOpen(false)} className="text-gray-400 hover:text-white transition-colors">
                   <X size={24} />
@@ -429,37 +588,37 @@ export default function StoryBoardPage() {
 
               <form onSubmit={handleAddStory} className="space-y-4 text-left">
                 <div>
-                  <label className="block text-xs font-mono text-gray-400 mb-2">SCAM METHOD / TITLE</label>
+                  <label className="block text-xs font-mono text-gray-400 mb-2">{t('scamTitleLabel')}</label>
                   <input 
                     type="text" 
                     required
                     value={newTitle}
                     onChange={(e) => setNewTitle(e.target.value)}
-                    placeholder="e.g. WhatsApp Job Scam asking for money task"
+                    placeholder={t('scamTitlePlaceholder')}
                     className="w-full bg-black/50 border border-gray-800 rounded p-3 text-white focus:border-[#b026ff] outline-none" 
                   />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-mono text-gray-400 mb-2">SCAM TYPE</label>
+                    <label className="block text-xs font-mono text-gray-400 mb-2">{t('scamTypeLabel')}</label>
                     <select 
                       value={newScamType} 
                       onChange={(e) => setNewScamType(e.target.value)}
                       className="w-full bg-black/50 border border-gray-800 rounded p-3 text-white focus:border-[#b026ff] outline-none"
                     >
-                      <option value="UPI Fraud">UPI Fraud</option>
-                      <option value="OTP Scam">OTP Scam</option>
-                      <option value="Phishing Link">Phishing Link</option>
-                      <option value="Fake Customer Care">Fake Customer Care</option>
-                      <option value="Job Offer">Job Offer</option>
-                      <option value="WhatsApp Scam">WhatsApp Scam</option>
-                      <option value="Other">Other</option>
+                      <option value="UPI Fraud">{t('upiFraud')}</option>
+                      <option value="OTP Scam">{t('otpScam')}</option>
+                      <option value="Phishing Link">{t('phishingLink')}</option>
+                      <option value="Fake Customer Care">{t('fakeCustomerCare')}</option>
+                      <option value="Job Offer">{t('jobOffer')}</option>
+                      <option value="WhatsApp Scam">{t('whatsappScam')}</option>
+                      <option value="Other">{t('other')}</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-mono text-gray-400 mb-2">FINANCIAL LOSS (INR, OPTIONAL)</label>
+                    <label className="block text-xs font-mono text-gray-400 mb-2">{t('lossLabel')}</label>
                     <input 
                       type="number" 
                       value={newLoss}
@@ -471,12 +630,12 @@ export default function StoryBoardPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-mono text-gray-400 mb-2">HOW DID IT HAPPEN? (BE DETAILED TO INFORM OTHERS)</label>
+                  <label className="block text-xs font-mono text-gray-400 mb-2">{t('howHappenLabel')}</label>
                   <textarea 
                     required
                     value={newDesc}
                     onChange={(e) => setNewDesc(e.target.value)}
-                    placeholder="Provide details on step-by-step occurrence: messages received, links clicked, phone numbers, warning signs you missed, or how you protected yourself."
+                    placeholder={t('howHappenPlaceholder')}
                     className="w-full bg-black/50 border border-gray-800 rounded p-3 text-white focus:border-[#b026ff] outline-none h-44" 
                   />
                 </div>
@@ -491,13 +650,13 @@ export default function StoryBoardPage() {
                       className="w-4.5 h-4.5 text-[#b026ff] bg-black border-gray-700 rounded focus:ring-[#b026ff] accent-[#b026ff]" 
                     />
                     <label htmlFor="anon" className="text-sm text-gray-300 font-mono select-none cursor-pointer">
-                      Post Anonymously
+                      {t('postAnonLabel')}
                     </label>
                   </div>
 
                   <div className="flex-1 sm:max-w-xs">
                     <label className="block text-xs font-mono text-gray-500 mb-1">
-                      {isAnonymous ? 'ALIAS NAME (OPTIONAL)' : 'AUTHOR NAME'}
+                      {isAnonymous ? t('aliasLabel') : t('authorLabel')}
                     </label>
                     <input 
                       type="text" 
@@ -517,10 +676,10 @@ export default function StoryBoardPage() {
                   {submittingStory ? (
                     <>
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      PUBLISHING REPORT...
+                      {t('publishingBtn')}
                     </>
                   ) : (
-                    'PUBLISH STORY TO BOARD'
+                    t('publishBtn')
                   )}
                 </button>
               </form>
@@ -548,11 +707,11 @@ export default function StoryBoardPage() {
                 <div>
                   <div className="flex items-center gap-3 mb-2 flex-wrap">
                     <span className={`px-2.5 py-1 text-xs font-mono border rounded ${getScamTypeStyles(activeStory.scamType)}`}>
-                      {activeStory.scamType}
+                      {getScamTypeTranslation(activeStory.scamType)}
                     </span>
                     {activeStory.financialLoss > 0 && (
                       <span className="text-sm font-mono text-red-500 font-bold">
-                        Loss: ₹{activeStory.financialLoss.toLocaleString()}
+                        {t('loss')}{activeStory.financialLoss.toLocaleString()}
                       </span>
                     )}
                   </div>
@@ -570,7 +729,7 @@ export default function StoryBoardPage() {
                 <div className="flex flex-wrap justify-between items-center gap-4 py-2 border-y border-gray-900 text-xs font-mono text-gray-500">
                   <span className="flex items-center gap-2">
                     {activeStory.isAnonymous ? <EyeOff size={14} /> : <User size={14} />}
-                    Shared by: <strong className="text-gray-300">{activeStory.authorName}</strong>
+                    {t('sharedBy')}<strong className="text-gray-300">{activeStory.authorName}</strong>
                   </span>
                   <span className="flex items-center gap-2">
                     <Calendar size={14} />
@@ -590,10 +749,10 @@ export default function StoryBoardPage() {
                     className="bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 px-4 py-2 rounded font-mono text-xs font-bold transition-all flex items-center gap-2 shrink-0"
                   >
                     <Heart size={14} className="fill-red-500/20" />
-                    UPVOTE ALERT ({activeStory.likes})
+                    {t('upvoteAlertBtn')} ({activeStory.likes})
                   </button>
                   <p className="text-xs text-gray-400 leading-normal">
-                    Upvote this alert if you found this informative or have observed a similar fraud attempt. Helps push the story to citizen tickers.
+                    {t('upvoteAlertDesc')}
                   </p>
                 </div>
 
@@ -601,12 +760,12 @@ export default function StoryBoardPage() {
                 <div>
                   <h3 className="text-sm font-heading font-bold text-white mb-4 flex items-center gap-2">
                     <MessageSquare size={16} className="text-[#00f0ff]" />
-                    CITIZEN WARNINGS & RESPONSES ({activeStory.comments.length})
+                    {t('commentsHeader')} ({activeStory.comments.length})
                   </h3>
 
                   {activeStory.comments.length === 0 ? (
                     <div className="py-6 text-center text-gray-500 text-xs border border-dashed border-gray-900 rounded">
-                      No warning comments yet. Have advice or query? Let the community know.
+                      {t('noComments')}
                     </div>
                   ) : (
                     <div className="space-y-4">
@@ -624,7 +783,7 @@ export default function StoryBoardPage() {
 
                   {/* Add Comment Form */}
                   <form onSubmit={handleAddComment} className="mt-6 space-y-3">
-                    <h4 className="text-xs font-heading font-bold text-gray-400">ADD ADVICE OR WARNING COMMENT</h4>
+                    <h4 className="text-xs font-heading font-bold text-gray-400">{t('addCommentHeader')}</h4>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                       <div className="md:col-span-2">
                         <textarea 
@@ -632,14 +791,14 @@ export default function StoryBoardPage() {
                           rows={2}
                           value={commentText}
                           onChange={(e) => setCommentText(e.target.value)}
-                          placeholder="Provide advice, warning tips, or question..."
+                          placeholder={t('commentPlaceholder')}
                           className="w-full bg-black/50 border border-gray-800 rounded p-3 text-white focus:border-[#00f0ff] outline-none text-sm"
                         />
                       </div>
                       <div className="space-y-2 flex flex-col justify-between">
                         <input 
                           type="text"
-                          placeholder="Your Name (optional)"
+                          placeholder={t('namePlaceholder')}
                           value={commentAuthor}
                           onChange={(e) => setCommentAuthor(e.target.value)}
                           className="w-full bg-black/50 border border-gray-800 rounded p-3 text-white focus:border-[#00f0ff] outline-none text-xs"
@@ -652,7 +811,7 @@ export default function StoryBoardPage() {
                           {submittingComment ? (
                             <div className="w-3.5 h-3.5 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
                           ) : (
-                            'POST COMMENT'
+                            t('postCommentBtn')
                           )}
                         </button>
                       </div>
