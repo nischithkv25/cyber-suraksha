@@ -55,6 +55,9 @@ export default function Navbar() {
               <Link href="/scan" className={`hover:text-[#00f0ff] px-3 py-2 rounded-md text-sm font-medium transition-colors ${pathname === '/scan' ? 'text-[#00f0ff]' : ''}`}>
                 AI Scanner
               </Link>
+              <Link href="/stories" className={`hover:text-[#00f0ff] px-3 py-2 rounded-md text-sm font-medium transition-colors ${pathname === '/stories' ? 'text-[#00f0ff]' : ''}`}>
+                Story Board
+              </Link>
               {user ? (
                 <>
                   <Link href="/profile" className={`hover:text-[#00f0ff] px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-1.5 ${pathname === '/profile' ? 'text-[#00f0ff]' : ''}`}>
@@ -95,6 +98,7 @@ export default function Navbar() {
             <Link href="/dashboard" className="block px-3 py-2 rounded-md text-base font-medium hover:text-[#00f0ff]">Dashboard</Link>
             <Link href="/report" className="block px-3 py-2 rounded-md text-base font-medium hover:text-[#00f0ff]">Report Scam</Link>
             <Link href="/scan" className="block px-3 py-2 rounded-md text-base font-medium hover:text-[#00f0ff]">AI Scanner</Link>
+            <Link href="/stories" className="block px-3 py-2 rounded-md text-base font-medium hover:text-[#00f0ff]">Story Board</Link>
             {user ? (
               <>
                 <Link href="/profile" className="block px-3 py-2 rounded-md text-base font-medium hover:text-[#00f0ff]">Profile ({user.name})</Link>

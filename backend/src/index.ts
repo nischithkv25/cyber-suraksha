@@ -9,6 +9,7 @@ import aiRoutes from './routes/aiRoutes';
 import emergencyRoutes from './routes/emergencyRoutes';
 import openphishRoutes from './routes/openphishRoutes';
 import complaintRoutes from './routes/complaintRoutes';
+import storyRoutes from './routes/storyRoutes';
 import { initializeSocketService } from './services/socketService';
 import { startOpenPhishStreaming } from './services/openphishService';
 
@@ -30,6 +31,7 @@ app.use('/api/ai', aiRoutes);
 app.use('/api/emergency', emergencyRoutes);
 app.use('/api/openphish', openphishRoutes);
 app.use('/api/complaints', complaintRoutes);
+app.use('/api/stories', storyRoutes);
 
 // Socket.io for mock real-time threat streams
 io.on('connection', (socket) => {
