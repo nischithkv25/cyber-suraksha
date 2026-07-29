@@ -5,10 +5,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { Phone, Key, Mail, Lock, ArrowRight, ShieldCheck, RefreshCw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useLanguage } from '@/context/LanguageContext';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005/api';
 
 export default function LoginPage() {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<'password' | 'otp'>('password');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -108,8 +110,8 @@ export default function LoginPage() {
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#00f0ff] to-[#b026ff]" />
         
         <div className="text-center mb-6">
-          <h1 className="text-3xl font-heading mb-2 neon-text-blue">SYSTEM LOGIN</h1>
-          <p className="text-gray-400 text-sm">Authenticate to access Cyber Suraksha Command Center</p>
+          <h1 className="text-3xl font-heading mb-2 neon-text-blue">{t('authSystemLogin')}</h1>
+          <p className="text-gray-400 text-sm">{t('authLoginDesc')}</p>
         </div>
 
         {/* Tab Selection */}
@@ -123,7 +125,7 @@ export default function LoginPage() {
                 : 'text-gray-400 hover:text-white'
             }`}
           >
-            Access Key
+            {t('authAccessKey')}
           </button>
           <button
             type="button"
@@ -134,7 +136,7 @@ export default function LoginPage() {
                 : 'text-gray-400 hover:text-white'
             }`}
           >
-            OTP Verification
+            {t('authOtpVerification')}
           </button>
         </div>
 
@@ -155,7 +157,7 @@ export default function LoginPage() {
               className="space-y-5"
             >
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Citizen Email</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">{t('authCitizenEmail')}</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Mail className="h-5 w-5 text-[#00f0ff]" />
@@ -165,14 +167,14 @@ export default function LoginPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full bg-black/50 border border-gray-700 rounded-md py-3 pl-10 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#00f0ff] focus:ring-1 focus:ring-[#00f0ff] transition-all"
-                    placeholder="name@example.com"
+                    placeholder={t('authEmailPlaceholder')}
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Access Key (Password)</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">{t('authPasswordLabel')}</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Lock className="h-5 w-5 text-[#00f0ff]" />
@@ -193,7 +195,7 @@ export default function LoginPage() {
                 disabled={loading}
                 className="w-full bg-[#00f0ff] hover:bg-[#00f0ff]/80 text-black font-bold py-3 px-4 rounded-md transition-all flex justify-center items-center gap-2 shadow-[0_0_10px_rgba(0,240,255,0.3)] disabled:opacity-50 mt-6"
               >
-                {loading ? 'AUTHENTICATING...' : 'INITIALIZE SESSION'}
+                {loading ? t('authAuthenticating') : t('authInitializeSession')}
                 {!loading && <ArrowRight size={18} />}
               </button>
             </motion.form>
@@ -207,7 +209,7 @@ export default function LoginPage() {
               {!otpSent ? (
                 <form onSubmit={handleSendOtp} className="space-y-5">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Phone Number</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">{t('authPhoneLabel')}</label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <Phone className="h-5 w-5 text-[#00f0ff]" />
@@ -217,7 +219,7 @@ export default function LoginPage() {
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         className="w-full bg-black/50 border border-gray-700 rounded-md py-3 pl-10 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#00f0ff] focus:ring-1 focus:ring-[#00f0ff] transition-all"
-                        placeholder="+91 9876543210"
+                        placeholder={t('authPhonePlaceholder')}
                         required
                       />
                     </div>
@@ -228,18 +230,18 @@ export default function LoginPage() {
                     disabled={loading}
                     className="w-full bg-[#00f0ff] hover:bg-[#00f0ff]/80 text-black font-bold py-3 px-4 rounded-md transition-all flex justify-center items-center gap-2 shadow-[0_0_10px_rgba(0,240,255,0.3)] disabled:opacity-50 mt-6"
                   >
-                    {loading ? 'GENERATING SECURE KEY...' : 'REQUEST LOGIN OTP'}
+                    {loading ? t('authGeneratingKey') : t('authRequestOtp')}
                     {!loading && <Key size={18} />}
                   </button>
                 </form>
               ) : (
                 <form onSubmit={handleVerifyOtp} className="space-y-5">
                   <div className="text-center bg-[#00f0ff]/5 border border-[#00f0ff]/20 p-3 rounded-md text-sm text-gray-400 mb-4">
-                    OTP sent to <span className="text-[#00f0ff]">{phone}</span>
+                    {t('authOtpSentTo')}<span className="text-[#00f0ff]">{phone}</span>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Verification OTP</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">{t('authVerificationOtpLabel')}</label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <ShieldCheck className="h-5 w-5 text-[#00f0ff]" />
@@ -249,7 +251,7 @@ export default function LoginPage() {
                         value={otp}
                         onChange={(e) => setOtp(e.target.value)}
                         className="w-full bg-black/50 border border-gray-700 rounded-md py-3 pl-10 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#00f0ff] focus:ring-1 focus:ring-[#00f0ff] transition-all"
-                        placeholder="Enter 6-digit OTP"
+                        placeholder={t('authOtpPlaceholder')}
                         maxLength={6}
                         required
                       />
@@ -262,14 +264,14 @@ export default function LoginPage() {
                       onClick={() => setOtpSent(false)}
                       className="text-gray-400 hover:text-white transition-all flex items-center gap-1"
                     >
-                      <RefreshCw size={12} /> Change Phone Number
+                      <RefreshCw size={12} /> {t('authChangePhone')}
                     </button>
                     <button
                       type="button"
                       onClick={handleSendOtp}
                       className="text-[#00f0ff] hover:underline"
                     >
-                      Resend OTP?
+                      {t('authResendOtp')}
                     </button>
                   </div>
 
@@ -278,7 +280,7 @@ export default function LoginPage() {
                     disabled={loading}
                     className="w-full bg-[#00f0ff] hover:bg-[#00f0ff]/80 text-black font-bold py-3 px-4 rounded-md transition-all flex justify-center items-center gap-2 shadow-[0_0_10px_rgba(0,240,255,0.3)] disabled:opacity-50 mt-6"
                   >
-                    {loading ? 'VERIFYING...' : 'VERIFY & ACCESS'}
+                    {loading ? t('authVerifying') : t('authVerifyAccess')}
                     {!loading && <ArrowRight size={18} />}
                   </button>
                 </form>
@@ -288,9 +290,9 @@ export default function LoginPage() {
         </AnimatePresence>
 
         <div className="mt-6 text-center text-sm text-gray-400">
-          Not registered in the network?{' '}
+          {t('authNotRegistered')}{' '}
           <Link href="/register" className="text-[#00f0ff] hover:underline">
-            Request Access
+            {t('authRequestAccess')}
           </Link>
         </div>
       </motion.div>

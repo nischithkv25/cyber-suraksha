@@ -4,11 +4,13 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UploadCloud, ShieldAlert, Scan, CheckCircle, ShieldCheck, AlertTriangle, FileText } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useLanguage } from '@/context/LanguageContext';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005/api';
 
 export default function AIScanPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [file, setFile] = useState<File | null>(null);
   const [url, setUrl] = useState('');
   const [isScanning, setIsScanning] = useState(false);
@@ -47,7 +49,7 @@ export default function AIScanPage() {
       }
 
       if (!res.ok) {
-        throw new Error('AI Scan Service returned an error response');
+        throw new Error('AI Scam Service returned an error response');
       }
 
       const data = await res.json();
@@ -110,9 +112,9 @@ export default function AIScanPage() {
       <div className="mb-8 border-b border-gray-800 pb-4">
         <h1 className="text-3xl font-heading font-bold text-white flex items-center gap-3">
           <Scan className="text-[#00f0ff]" size={32} />
-          AI SCAM DETECTION ENGINE
+          {t('scanTitle')}
         </h1>
-        <p className="text-gray-400 mt-2 font-mono text-sm">Upload screenshots, SMS texts, or enter URLs for deep neural analysis.</p>
+        <p className="text-gray-400 mt-2 font-mono text-sm">{t('scanSubtitle')}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -120,14 +122,14 @@ export default function AIScanPage() {
         <div className="space-y-6">
           <div className="glass-panel p-6">
             <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-              <UploadCloud className="text-[#b026ff]" /> EVIDENCE UPLOAD
+              <UploadCloud className="text-[#b026ff]" /> {t('scanEvidenceUpload')}
             </h2>
             <div className="border-2 border-dashed border-gray-700 rounded-lg p-8 text-center hover:border-[#b026ff] transition-colors bg-black/30 cursor-pointer">
               <input type="file" className="hidden" id="file-upload" onChange={(e) => setFile(e.target.files?.[0] || null)} />
               <label htmlFor="file-upload" className="cursor-pointer flex flex-col items-center">
                 <UploadCloud className="text-gray-500 mb-2" size={40} />
-                <span className="text-gray-300 font-medium">Drag & Drop or Click to Browse</span>
-                <span className="text-xs text-gray-500 mt-2">Supports JPG, PNG, PDF (Max 5MB)</span>
+                <span className="text-gray-300 font-medium">{t('scanDragDrop')}</span>
+                <span className="text-xs text-gray-500 mt-2">{t('scanUploadLimits')}</span>
                 {file && <span className="mt-4 text-[#00f0ff] font-mono border border-[#00f0ff]/30 bg-[#00f0ff]/10 px-3 py-1 rounded">{file.name}</span>}
               </label>
             </div>
@@ -135,7 +137,7 @@ export default function AIScanPage() {
 
           <div className="flex items-center gap-4 w-full">
             <div className="h-px bg-gray-800 flex-1"></div>
-            <span className="text-gray-500 font-mono text-xs">OR INITIALIZE SCAN ON URL</span>
+            <span className="text-gray-500 font-mono text-xs">{t('scanOrUrl')}</span>
             <div className="h-px bg-gray-800 flex-1"></div>
           </div>
 
@@ -154,10 +156,10 @@ export default function AIScanPage() {
             >
               {isScanning ? (
                 <>
-                  <Scan className="animate-spin" size={20} /> ANALYZING PATTERNS...
+                  <Scan className="animate-spin" size={20} /> {t('scanAnalyzing')}
                 </>
               ) : (
-                'INITIALIZE NEURAL SCAN'
+                t('scanInitBtn')
               )}
             </button>
           </div>
@@ -172,7 +174,7 @@ export default function AIScanPage() {
                 className="absolute inset-0 flex flex-col items-center justify-center text-gray-600 glass-panel border-dashed"
               >
                 <Scan size={64} className="mb-4 opacity-50" />
-                <p className="font-mono text-sm text-center px-8">Awaiting input data. Our AI model trained on over 5M+ cyber crime records is standing by.</p>
+                <p className="font-mono text-sm text-center px-8">{t('scanAwaiting')}</p>
               </motion.div>
             )}
 
@@ -187,8 +189,8 @@ export default function AIScanPage() {
                   <div className="absolute inset-4 border-b-2 border-white rounded-full animate-spin" style={{ animationDuration: '3s' }}></div>
                   <Scan size={40} className="absolute inset-0 m-auto text-[#00f0ff] animate-pulse" />
                 </div>
-                <div className="font-mono text-[#00f0ff] text-sm tracking-widest animate-pulse">EXTRACTING METADATA...</div>
-                <div className="font-mono text-[#b026ff] text-xs tracking-widest mt-2">RUNNING HEURISTICS</div>
+                <div className="font-mono text-[#00f0ff] text-sm tracking-widest animate-pulse">{t('scanExtracting')}</div>
+                <div className="font-mono text-[#b026ff] text-xs tracking-widest mt-2">{t('scanHeuristics')}</div>
               </motion.div>
             )}
 
@@ -199,7 +201,7 @@ export default function AIScanPage() {
               >
                 <div className="flex justify-between items-start mb-6 border-b border-gray-800 pb-4">
                   <div>
-                    <h3 className="font-heading text-xl text-white">ANALYSIS COMPLETE</h3>
+                    <h3 className="font-heading text-xl text-white">{t('scanComplete')}</h3>
                     <p className={`font-mono text-sm ${result.threatScore > 50 ? 'text-red-400' : 'text-green-400'}`}>
                       {result.classification} DETECTED
                     </p>
@@ -211,7 +213,7 @@ export default function AIScanPage() {
 
                 <div className="mb-8">
                   <div className="flex justify-between text-sm mb-2 font-mono">
-                    <span className="text-gray-400">THREAT SCORE</span>
+                    <span className="text-gray-400">{t('scanScore')}</span>
                     <span className={result.threatScore > 50 ? 'text-red-500 font-bold' : 'text-green-500 font-bold'}>{result.threatScore}/100</span>
                   </div>
                   <div className="w-full bg-gray-900 rounded-full h-3">
@@ -220,7 +222,7 @@ export default function AIScanPage() {
                 </div>
 
                 <div className="space-y-4">
-                  <h4 className="font-mono text-sm text-gray-400 border-b border-gray-800 pb-1">AI DETECTIONS</h4>
+                  <h4 className="font-mono text-sm text-gray-400 border-b border-gray-800 pb-1">{t('scanDetections')}</h4>
                   {result.details.map((detail: string, idx: number) => (
                     <div key={idx} className="flex items-start gap-3 bg-black/40 p-3 rounded border border-gray-800">
                       <AlertTriangle className="text-yellow-500 shrink-0 mt-0.5" size={16} />
@@ -235,15 +237,15 @@ export default function AIScanPage() {
                       <div className="space-y-3">
                         <div className="p-4 border border-green-500/30 bg-green-500/10 rounded-md">
                           <h5 className="text-green-400 font-bold flex items-center gap-2 mb-2">
-                            <CheckCircle size={18} /> COMPLAINT AUTO-FILED SUCCESSFULLY
+                            <CheckCircle size={18} /> {t('scanSuccess')}
                           </h5>
                           <div className="space-y-2 text-xs font-mono text-gray-300">
                             <div>
-                              <span className="text-gray-400">COMPLAINT ID:</span>{' '}
+                              <span className="text-gray-400">{t('scanId')}</span>{' '}
                               <span className="text-white">{filedComplaint.id}</span>
                             </div>
                             <div>
-                              <span className="text-gray-400">BLOCKCHAIN HASH:</span>{' '}
+                              <span className="text-gray-400">{t('scanHash')}</span>{' '}
                               <span className="text-emerald-400 break-all">{filedComplaint.hash}</span>
                             </div>
                           </div>
@@ -254,13 +256,13 @@ export default function AIScanPage() {
                           rel="noopener noreferrer"
                           className="w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold py-3 rounded-md transition-all flex items-center justify-center gap-2 text-center"
                         >
-                          <FileText size={18} /> DOWNLOAD OFFICIAL PDF
+                          <FileText size={18} /> {t('scanDownload')}
                         </a>
                       </div>
                     ) : isFiling ? (
                       <div className="p-4 border border-[#00f0ff]/30 bg-[#00f0ff]/10 rounded-md text-center">
                         <p className="text-[#00f0ff] font-mono text-sm tracking-wider animate-pulse">
-                          SECURING EVIDENCE ON BLOCKCHAIN & AUTO-FILING COMPLAINT...
+                          {t('scanFiling')}
                         </p>
                       </div>
                     ) : (
@@ -271,7 +273,7 @@ export default function AIScanPage() {
                   ) : (
                     <div className="p-4 border border-green-500/30 bg-green-500/10 rounded-md text-center">
                       <p className="text-green-400 font-mono text-sm">
-                        Verified Secure. No malicious threat indicators detected.
+                        {t('scanSecured')}
                       </p>
                     </div>
                   )}

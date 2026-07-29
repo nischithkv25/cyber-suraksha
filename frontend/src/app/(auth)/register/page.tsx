@@ -5,10 +5,12 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { Lock, Mail, User, Phone, ShieldCheck } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useLanguage } from '@/context/LanguageContext';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005/api';
 
 export default function RegisterPage() {
+  const { t } = useLanguage();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -87,12 +89,12 @@ export default function RegisterPage() {
         
         <div className="text-center mb-8">
           <h1 className="text-3xl font-heading mb-2 text-[#b026ff] neon-text-blue" style={{ textShadow: '0 0 10px #b026ff' }}>
-            {otpSent ? 'VERIFY PHONE' : 'JOIN NETWORK'}
+            {otpSent ? t('authVerifyPhone') : t('authJoinNetwork')}
           </h1>
           <p className="text-gray-400 text-sm">
             {otpSent 
-              ? 'Enter the verification code sent to your phone'
-              : 'Register your digital identity with Cyber Suraksha'}
+              ? t('authRegisterOtpSentDesc')
+              : t('authRegisterDefaultDesc')}
           </p>
         </div>
 
@@ -111,7 +113,7 @@ export default function RegisterPage() {
         {!otpSent ? (
           <form onSubmit={handleRegister} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Full Name</label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">{t('authCitizenName')}</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <User className="h-5 w-5 text-[#b026ff]" />
@@ -121,14 +123,14 @@ export default function RegisterPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full bg-black/50 border border-gray-700 rounded-md py-3 pl-10 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#b026ff] focus:ring-1 focus:ring-[#b026ff] transition-all"
-                  placeholder="Citizen Name"
+                  placeholder={t('authCitizenNamePlaceholder')}
                   required
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Email Address</label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">{t('profEmail')}</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Mail className="h-5 w-5 text-[#b026ff]" />
@@ -138,14 +140,14 @@ export default function RegisterPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full bg-black/50 border border-gray-700 rounded-md py-3 pl-10 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#b026ff] focus:ring-1 focus:ring-[#b026ff] transition-all"
-                  placeholder="name@example.com"
+                  placeholder={t('authEmailPlaceholder')}
                   required
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Phone Number (For OTP Verification)</label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">{t('authRegisterPhoneLabel')}</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Phone className="h-5 w-5 text-[#b026ff]" />
@@ -155,14 +157,14 @@ export default function RegisterPage() {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   className="w-full bg-black/50 border border-gray-700 rounded-md py-3 pl-10 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#b026ff] focus:ring-1 focus:ring-[#b026ff] transition-all"
-                  placeholder="+91 9876543210"
+                  placeholder={t('authPhonePlaceholder')}
                   required
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Secure Access Key (Password)</label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">{t('authRegisterPasswordLabel')}</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Lock className="h-5 w-5 text-[#b026ff]" />
@@ -183,7 +185,7 @@ export default function RegisterPage() {
               disabled={loading}
               className="w-full bg-[#b026ff] hover:bg-[#b026ff]/80 text-white font-bold py-3 px-4 rounded-md transition-all flex justify-center items-center gap-2 shadow-[0_0_15px_rgba(176,38,255,0.4)] disabled:opacity-50 mt-4"
             >
-              {loading ? 'ENCRYPTING DATA...' : 'ESTABLISH IDENTITY'}
+              {loading ? t('authEncrypting') : t('authEstablishIdentity')}
               {!loading && <ShieldCheck size={18} />}
             </button>
           </form>
@@ -191,7 +193,7 @@ export default function RegisterPage() {
           <form onSubmit={handleVerifyOtp} className="space-y-5">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2 text-center">
-                Enter the 6-digit code sent to <span className="text-[#b026ff] font-semibold">{phone}</span>
+                {t('authOtpSentTo')} <span className="text-[#b026ff] font-semibold">{phone}</span>
               </label>
               <div className="relative">
                 <input 
@@ -211,7 +213,7 @@ export default function RegisterPage() {
               disabled={loading}
               className="w-full bg-[#00f0ff] hover:bg-[#00f0ff]/80 text-black font-bold py-3 px-4 rounded-md transition-all flex justify-center items-center gap-2 shadow-[0_0_15px_rgba(0,240,255,0.4)] disabled:opacity-50"
             >
-              {loading ? 'VERIFYING SECURITY...' : 'VERIFY & REGISTER'}
+              {loading ? t('authVerifyingSecurity') : t('authVerifyRegisterBtn')}
               {!loading && <ShieldCheck size={18} />}
             </button>
 
@@ -220,15 +222,15 @@ export default function RegisterPage() {
               onClick={() => setOtpSent(false)}
               className="w-full bg-transparent hover:bg-gray-800 text-gray-400 py-2 text-sm rounded-md transition-all mt-2"
             >
-              ← Back to Registration Details
+              {t('authBackRegister')}
             </button>
           </form>
         )}
 
         <div className="mt-6 text-center text-sm text-gray-400">
-          Already have an identity?{' '}
+          {t('authAlreadyRegistered')}{' '}
           <Link href="/login" className="text-[#b026ff] hover:underline">
-            Authenticate Here
+            {t('authAuthenticateHere')}
           </Link>
         </div>
       </motion.div>

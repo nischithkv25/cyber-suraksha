@@ -3,6 +3,7 @@ import { Inter, Orbitron } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import AIChatbot from "@/components/ui/AIChatbot";
+import { LanguageProvider } from "@/context/LanguageContext";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -29,11 +30,13 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${orbitron.variable} antialiased bg-background text-foreground`}
       >
-        <Navbar />
-        <main className="pt-16">
-          {children}
-        </main>
-        <AIChatbot />
+        <LanguageProvider>
+          <Navbar />
+          <main className="pt-16">
+            {children}
+          </main>
+          <AIChatbot />
+        </LanguageProvider>
       </body>
     </html>
   );

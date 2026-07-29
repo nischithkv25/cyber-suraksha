@@ -6,115 +6,9 @@ import {
   ShieldAlert, MessageSquare, Heart, Search, Plus, X, 
   Calendar, DollarSign, Filter, BookOpen, AlertTriangle, ArrowRight, UserCheck, EyeOff, User, Languages
 } from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005/api';
-
-type Language = 'en' | 'kn';
-
-const translations = {
-  en: {
-    pageTitle: "CITIZEN SHIELD STORY BOARD",
-    pageSubtitle: "Karnataka Cyber Defense Grid - Citizen Warning Forum",
-    shareBtn: "SHARE YOUR STORY",
-    warningHeader: "CRITICAL WARNING FOR CITIZENS",
-    warningBody: "Scammers are heavily using \"Part-time Job Offers\" via WhatsApp and Telegram. Never pay money upfront for completing \"tasks\" or to unlock money. Treat all unsolicited UPI/OTP requests as high risk.",
-    searchPlaceholder: "Search keyword (e.g. WhatsApp, refund, SBI)...",
-    searchBtn: "SEARCH",
-    allScamTypes: "All Scam Types",
-    upiFraud: "UPI Fraud",
-    otpScam: "OTP Scam",
-    phishingLink: "Phishing Link",
-    fakeCustomerCare: "Fake Customer Care",
-    jobOffer: "Job Offer",
-    whatsappScam: "WhatsApp Scam",
-    other: "Other",
-    newest: "Newest First",
-    mostAlerted: "Most Alerted (Likes)",
-    highestLoss: "Highest Financial Loss",
-    oldest: "Oldest First",
-    loadingStories: "LOADING STORIES...",
-    noStories: "NO STORIES FOUND",
-    noStoriesDesc: "Be the first to share your experience and warn others about new scam methods.",
-    shareExperienceBtn: "SHARE AN EXPERIENCE",
-    loss: "Loss: ₹",
-    sharedBy: "Shared by: ",
-    upvotes: "likes",
-    comments: "comments",
-    shareCompromiseHeader: "SHARE COMPROMISE EXPERIENCE",
-    scamTitleLabel: "SCAM METHOD / TITLE",
-    scamTitlePlaceholder: "e.g. WhatsApp Job Scam asking for money task",
-    scamTypeLabel: "SCAM TYPE",
-    lossLabel: "FINANCIAL LOSS (INR, OPTIONAL)",
-    howHappenLabel: "HOW DID IT HAPPEN? (BE DETAILED TO INFORM OTHERS)",
-    howHappenPlaceholder: "Provide details on step-by-step occurrence: messages received, links clicked, phone numbers, warning signs you missed, or how you protected yourself.",
-    postAnonLabel: "Post Anonymously",
-    aliasLabel: "ALIAS NAME (OPTIONAL)",
-    authorLabel: "AUTHOR NAME",
-    publishBtn: "PUBLISH STORY TO BOARD",
-    publishingBtn: "PUBLISHING REPORT...",
-    commentsHeader: "CITIZEN WARNINGS & RESPONSES",
-    noComments: "No warning comments yet. Have advice or query? Let the community know.",
-    addCommentHeader: "ADD ADVICE OR WARNING COMMENT",
-    commentPlaceholder: "Provide advice, warning tips, or question...",
-    namePlaceholder: "Your Name (optional)",
-    postCommentBtn: "POST COMMENT",
-    upvoteAlertBtn: "UPVOTE ALERT",
-    upvoteAlertDesc: "Upvote this alert if you found this informative or have observed a similar fraud attempt. Helps push the story to citizen tickers.",
-    postingCommentBtn: "POSTING...",
-    anonymousCitizen: "Anonymous Citizen"
-  },
-  kn: {
-    pageTitle: "ನಾಗರಿಕ ರಕ್ಷಣೆ ಸ್ಟೋರಿ ಬೋರ್ಡ್",
-    pageSubtitle: "ಕರ್ನಾಟಕ ಸೈಬರ್ ರಕ್ಷಣಾ ಗ್ರಿಡ್ - ನಾಗರಿಕ ಎಚ್ಚರಿಕೆ ವೇದಿಕೆ",
-    shareBtn: "ನಿಮ್ಮ ಕಥೆ ಹಂಚಿಕೊಳ್ಳಿ",
-    warningHeader: "ನಾಗರಿಕರಿಗೆ ಪ್ರಮುಖ ಎಚ್ಚರಿಕೆ",
-    warningBody: "ವಂಚಕರು ವಾಟ್ಸಾಪ್ ಮತ್ತು ಟೆಲಿಗ್ರಾಮ್ ಮೂಲಕ 'ಅರೆಕಾಲಿಕ ಉದ್ಯೋಗ ಕೊಡುಗೆಗಳನ್ನು' ಹೆಚ್ಚಾಗಿ ಬಳಸುತ್ತಿದ್ದಾರೆ. 'ಕೆಲಸ ಪೂರ್ಣಗೊಳಿಸಲು' ಅಥವಾ ಹಣ ಬಿಡುಗಡೆ ಮಾಡಲು ಎಂದಿಗೂ ಮುಂಗಡ ಹಣ ಪಾವತಿಸಬೇಡಿ. ಎಲ್ಲಾ ಅಪರಿಚಿತ UPI/OTP ವಿನಂತಿಗಳನ್ನು ಅಪಾಯಕಾರಿ ಎಂದು ಪರಿಗಣಿಸಿ.",
-    searchPlaceholder: "ಹುಡುಕಾಟ ಪದಗುಚ್ಛ (ಉದಾ. ವಾಟ್ಸಾಪ್, ಮರುಪಾವತಿ, SBI)...",
-    searchBtn: "ಹುಡುಕಿ",
-    allScamTypes: "ಎಲ್ಲಾ ಹಗರಣಗಳು",
-    upiFraud: "ಯುಪಿಐ ವಂಚನೆ",
-    otpScam: "ಒಟಿಪಿ ಹಗರಣ",
-    phishingLink: "ಫಿಶಿಂಗ್ ಲಿಂಕ್",
-    fakeCustomerCare: "ನಕಲಿ ಗ್ರಾಹಕ ಸೇವೆ",
-    jobOffer: "ಉದ್ಯೋಗ ಕೊಡುಗೆ",
-    whatsappScam: "ವಾಟ್ಸಾಪ್ ವಂಚನೆ",
-    other: "ಇತರೆ",
-    newest: "ಹೊಸದು ಮೊದಲು",
-    mostAlerted: "ಹೆಚ್ಚು ಲೈಕ್ಸ್ ಪಡೆದದ್ದು",
-    highestLoss: "ಹೆಚ್ಚಿನ ಆರ್ಥಿಕ ನಷ್ಟ",
-    oldest: "ಹಳೆಯದು ಮೊದಲು",
-    loadingStories: "ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ...",
-    noStories: "ಯಾವುದೇ ಕಥೆಗಳು ಕಂಡುಬಂದಿಲ್ಲ",
-    noStoriesDesc: "ಹೊಸ ಹಗರಣಗಳ ವಿಧಾನಗಳ ಬಗ್ಗೆ ಇತರರಿಗೆ ಎಚ್ಚರಿಕೆ ನೀಡಲು ನಿಮ್ಮ ಅನುಭವವನ್ನು ಹಂಚಿಕೊಳ್ಳುವ ಮೊದಲ ವ್ಯಕ್ತಿಯಾಗಿರಿ.",
-    shareExperienceBtn: "ನಿಮ್ಮ ಅನುಭವ ಹಂಚಿಕೊಳ್ಳಿ",
-    loss: "ನಷ್ಟ: ₹",
-    sharedBy: "ಹಂಚಿಕೊಂಡವರು: ",
-    upvotes: "ಲೈಕ್ಸ್",
-    comments: "ಕಾಮೆಂಟ್‌ಗಳು",
-    shareCompromiseHeader: "ನಿಮ್ಮ ಹಗರಣದ ಅನುಭವವನ್ನು ಹಂಚಿಕೊಳ್ಳಿ",
-    scamTitleLabel: "ಹಗರಣದ ಶೀರ್ಷಿಕೆ / ಹೆಸರು",
-    scamTitlePlaceholder: "ಉದಾ. ವಾಟ್ಸಾಪ್ ಕೆಲಸದ ಹಗರಣ ಹಣಕ್ಕಾಗಿ ಬೇಡಿಕೆ",
-    scamTypeLabel: "ಹಗರಣದ ವಿಧ",
-    lossLabel: "ಹಣಕಾಸು ನಷ್ಟ (ರೂಪಾಯಿಗಳಲ್ಲಿ, ಐಚ್ಛಿಕ)",
-    howHappenLabel: "ಇದು ಹೇಗೆ ಸಂಭವಿಸಿತು? (ಇತರರಿಗೆ ತಿಳಿಸಲು ವಿವರವಾಗಿ ಬರೆಯಿರಿ)",
-    howHappenPlaceholder: "ಹಂತ-ಹಂತದ ವಿವರಗಳನ್ನು ಒದಗಿಸಿ: ಬಂದ ಸಂದೇಶಗಳು, ಕ್ಲಿಕ್ ಮಾಡಿದ ಲಿಂಕ್‌ಗಳು, ದೂರವಾಣಿ ಸಂಖ್ಯೆಗಳು, ನೀವು ಗಮನಿಸದ ಎಚ್ಚರಿಕೆಗಳು, ಅಥವಾ ನಿಮ್ಮನ್ನು ನೀವು ಹೇಗೆ ರಕ್ಷಿಸಿಕೊಂಡಿದ್ದೀರಿ.",
-    postAnonLabel: "ಅನಾಮಧೇಯವಾಗಿ ಪೋಸ್ಟ್ ಮಾಡಿ",
-    aliasLabel: "ಅಡ್ಡ ಹೆಸರು (ಐಚ್ಛಿಕ)",
-    authorLabel: "ಲೇಖಕರ ಹೆಸರು",
-    publishBtn: "ಬೋರ್ಡ್‌ನಲ್ಲಿ ಪ್ರಕಟಿಸಿ",
-    publishingBtn: "ಪ್ರಕಟಿಸಲಾಗುತ್ತಿದೆ...",
-    commentsHeader: "ನಾಗರಿಕ ಎಚ್ಚರಿಕೆಗಳು ಮತ್ತು ಪ್ರತಿಕ್ರಿಯೆಗಳು",
-    noComments: "ಇನ್ನೂ ಯಾವುದೇ ಕಾಮೆಂಟ್‌ಗಳಿಲ್ಲ. ಸಲಹೆ ಅಥವಾ ಪ್ರಶ್ನೆಗಳಿವೆಯೇ? ಸಮುದಾಯಕ್ಕೆ ತಿಳಿಸಿ.",
-    addCommentHeader: "ಸಲಹೆ ಅಥವಾ ಎಚ್ಚರಿಕೆಯ ಕಾಮೆಂಟ್ ಸೇರಿಸಿ",
-    commentPlaceholder: "ಸಲಹೆ, ಎಚ್ಚರಿಕೆಯ ಸಲಹೆಗಳು ಅಥವಾ ಪ್ರಶ್ನೆಯನ್ನು ಬರೆಯಿರಿ...",
-    namePlaceholder: "ನಿಮ್ಮ ಹೆಸರು (ಐಚ್ಛಿಕ)",
-    postCommentBtn: "ಕಾಮೆಂಟ್ ಪೋಸ್ಟ್ ಮಾಡಿ",
-    upvoteAlertBtn: "ಅಲರ್ಟ್ ವೋಟ್ ಮಾಡಿ",
-    upvoteAlertDesc: "ಈ ಎಚ್ಚರಿಕೆಯು ನಿಮಗೆ ಉಪಯುಕ್ತವಾಗಿದ್ದರೆ ಅಥವಾ ಇದೇ ರೀತಿಯ ವಂಚನೆಯನ್ನು ಗಮನಿಸಿದ್ದರೆ ಅಪ್‌ವೋಟ್ ಮಾಡಿ. ಇದು ಕಥೆಯನ್ನು ನಾಗರಿಕರ ಟಿಕ್ಕರ್‌ಗಳಿಗೆ ತಳ್ಳಲು ಸಹಾಯ ಮಾಡುತ್ತದೆ.",
-    postingCommentBtn: "ಪೋಸ್ಟ್ ಮಾಡಲಾಗುತ್ತಿದೆ...",
-    anonymousCitizen: "ಅನಾಮಧೇಯ ನಾಗರಿಕ"
-  }
-};
 
 interface Comment {
   _id?: string;
@@ -139,13 +33,13 @@ interface Story {
 }
 
 export default function StoryBoardPage() {
+  const { lang, t } = useLanguage();
   const [stories, setStories] = useState<Story[]>([]);
   const [search, setSearch] = useState('');
   const [scamType, setScamType] = useState('All');
   const [sortBy, setSortBy] = useState('newest');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [lang, setLang] = useState<Language>('en');
 
   // Modals state
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
@@ -178,18 +72,7 @@ export default function StoryBoardPage() {
         setCurrentUser(null);
       }
     }
-
-    // Read language preference from localStorage
-    const storedLang = localStorage.getItem('preferredLang');
-    if (storedLang === 'en' || storedLang === 'kn') {
-      setLang(storedLang);
-    }
   }, []);
-
-  const handleLanguageChange = (newLang: Language) => {
-    setLang(newLang);
-    localStorage.setItem('preferredLang', newLang);
-  };
 
   const fetchStories = async () => {
     setLoading(true);
@@ -351,10 +234,6 @@ export default function StoryBoardPage() {
     }
   };
 
-  const t = (key: keyof typeof translations['en']) => {
-    return translations[lang][key] || translations['en'][key];
-  };
-
   const getScamTypeTranslation = (type: string) => {
     if (lang === 'en') return type;
     switch (type) {
@@ -394,25 +273,6 @@ export default function StoryBoardPage() {
         </div>
 
         <div className="flex items-center gap-4">
-          {/* Language Switcher */}
-          <div className="flex bg-black/40 border border-gray-800 rounded p-1 items-center gap-1">
-            <Languages size={14} className="text-gray-500 ml-2" />
-            <button 
-              id="lang-en-btn"
-              onClick={() => handleLanguageChange('en')}
-              className={`px-3 py-1 text-xs font-mono rounded transition-all ${lang === 'en' ? 'bg-[#b026ff] text-white shadow-[0_0_8px_rgba(176,38,255,0.4)]' : 'text-gray-400 hover:text-white'}`}
-            >
-              ENGLISH
-            </button>
-            <button 
-              id="lang-kn-btn"
-              onClick={() => handleLanguageChange('kn')}
-              className={`px-3 py-1 text-xs font-mono rounded transition-all ${lang === 'kn' ? 'bg-[#b026ff] text-white shadow-[0_0_8px_rgba(176,38,255,0.4)]' : 'text-gray-400 hover:text-white'}`}
-            >
-              ಕನ್ನಡ
-            </button>
-          </div>
-
           <button 
             onClick={() => setIsShareModalOpen(true)}
             className="bg-[#b026ff] hover:bg-[#b026ff]/80 text-white font-bold py-3 px-6 rounded-md transition-all flex items-center gap-2 shadow-[0_0_15px_rgba(176,38,255,0.4)]"

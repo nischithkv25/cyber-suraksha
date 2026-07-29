@@ -11,6 +11,7 @@ import {
   AreaChart, Area
 } from 'recharts';
 import { io } from 'socket.io-client';
+import { useLanguage } from '@/context/LanguageContext';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005/api';
 const SOCKET_URL = API_URL.endsWith('/api') ? API_URL.slice(0, -4) : API_URL;
@@ -26,6 +27,7 @@ const threatData = [
 ];
 
 export default function Dashboard() {
+  const { t } = useLanguage();
   const [threatScore, setThreatScore] = useState(87);
   const [alerts, setAlerts] = useState<any[]>([]);
   const [threatsBlocked, setThreatsBlocked] = useState(12450);
@@ -42,7 +44,8 @@ export default function Dashboard() {
         const mappedThreats = data.map((threat: any) => ({
           id: threat.id,
           type: threat.severity,
-          msg: `Phishing domain active targeting ${threat.brand}`,
+          msgKey: 'dashPhishingMsg',
+          brand: threat.brand,
           url: threat.url,
           time: new Date(threat.timestamp).toLocaleTimeString()
         }));
@@ -51,10 +54,10 @@ export default function Dashboard() {
       } catch (err) {
         console.error('Error fetching initial OpenPhish threats:', err);
         setAlerts([
-          { id: '1', type: 'CRITICAL', msg: "Mass SMS phishing detected targeting SBI users", time: "2 min ago" },
-          { id: '2', type: 'WARNING', msg: "Suspicious Telegram group identified", time: "15 min ago" },
-          { id: '3', type: 'SECURED', msg: "Fraudulent UPI ID frozen (₹1.2L recovered)", time: "42 min ago" },
-          { id: '4', type: 'WARNING', msg: "Fake customer care number reported 15x", time: "1 hr ago" }
+          { id: '1', type: 'CRITICAL', msgKey: "dashSbiMsg", time: "2 min ago" },
+          { id: '2', type: 'WARNING', msgKey: "dashTelegramMsg", time: "15 min ago" },
+          { id: '3', type: 'SECURED', msgKey: "dashUpiMsg", time: "42 min ago" },
+          { id: '4', type: 'WARNING', msgKey: "dashCustomerCareMsg", time: "1 hr ago" }
         ]);
       }
     };
@@ -75,7 +78,8 @@ export default function Dashboard() {
         {
           id: threat.id,
           type: threat.severity,
-          msg: `Phishing domain active targeting ${threat.brand}`,
+          msgKey: 'dashPhishingMsg',
+          brand: threat.brand,
           url: threat.url,
           time: new Date(threat.timestamp).toLocaleTimeString()
         },
@@ -107,13 +111,13 @@ export default function Dashboard() {
     <div className="min-h-screen p-4 md:p-8 space-y-6 max-w-7xl mx-auto">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-heading font-bold text-white">COMMAND CENTER</h1>
-          <p className="text-[#00f0ff]">Karnataka Cyber Defense Grid</p>
+          <h1 className="text-3xl font-heading font-bold text-white">{t('dashTitle')}</h1>
+          <p className="text-[#00f0ff]">{t('dashSubtitle')}</p>
         </div>
         <div className="flex gap-4">
           <div className="glass-panel px-4 py-2 flex items-center gap-2 border-green-500/30">
             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            <span className="text-sm text-green-400 font-mono">SYSTEM ACTIVE</span>
+            <span className="text-sm text-green-400 font-mono">{t('dashActive')}</span>
           </div>
         </div>
       </div>
@@ -125,7 +129,7 @@ export default function Dashboard() {
           animate={{ opacity: 1, y: 0 }}
           className="glass-panel p-6 md:col-span-1 border-[#ff003c]/30"
         >
-          <h2 className="text-sm text-gray-400 mb-2 font-mono">CURRENT THREAT LEVEL</h2>
+          <h2 className="text-sm text-gray-400 mb-2 font-mono">{t('dashThreatLevel')}</h2>
           <div className="flex items-end gap-2 mb-4">
             <span className={`text-6xl font-bold font-heading ${threatScore > 80 ? 'text-[#ff003c] neon-text-red' : 'text-[#00f0ff] neon-text-blue'}`}>
               {threatScore}
@@ -140,14 +144,14 @@ export default function Dashboard() {
               className={`h-2 rounded-full ${threatScore > 80 ? 'bg-[#ff003c]' : 'bg-[#00f0ff]'}`}
             />
           </div>
-          <p className="text-xs text-red-400 font-mono">HIGH RISK IDENTIFIED IN SOUTHERN GRID</p>
+          <p className="text-xs text-red-400 font-mono">{t('dashThreatAlert')}</p>
         </motion.div>
 
         {/* Stats Cards */}
         <div className="md:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-6">
-          <StatCard title="THREATS BLOCKED" value={threatsBlocked.toLocaleString()} icon={<ShieldCheck className="text-green-400" size={24}/>} trend="+14%" color="green" />
-          <StatCard title="ACTIVE SCANS" value="3,211" icon={<Activity className="text-[#00f0ff]" size={24}/>} trend="+5%" color="blue" />
-          <StatCard title="COMPLAINTS FILED" value="842" icon={<AlertTriangle className="text-[#b026ff]" size={24}/>} trend="-2%" color="purple" />
+          <StatCard titleKey="dashBlocked" value={threatsBlocked.toLocaleString()} icon={<ShieldCheck className="text-green-400" size={24}/>} trend="+14%" color="green" />
+          <StatCard titleKey="dashActiveScans" value="3,211" icon={<Activity className="text-[#00f0ff]" size={24}/>} trend="+5%" color="blue" />
+          <StatCard titleKey="dashComplaints" value="842" icon={<AlertTriangle className="text-[#b026ff]" size={24}/>} trend="-2%" color="purple" />
         </div>
       </div>
 
@@ -160,7 +164,7 @@ export default function Dashboard() {
           className="glass-panel p-6 md:col-span-2"
         >
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-lg font-heading text-white">THREAT VOLUME (24H)</h2>
+            <h2 className="text-lg font-heading text-white">{t('dashChartTitle')}</h2>
             <BarChart3 className="text-gray-500" size={20} />
           </div>
           <div className="h-[300px] w-full">
@@ -193,7 +197,7 @@ export default function Dashboard() {
           className="glass-panel p-6 flex flex-col h-full"
         >
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-lg font-heading text-white">LIVE INTERCEPTS</h2>
+            <h2 className="text-lg font-heading text-white">{t('dashLiveIntercepts')}</h2>
             <Activity className="text-[#ff003c] animate-pulse" size={20} />
           </div>
           <div className="space-y-4 flex-1 overflow-y-auto pr-2 custom-scrollbar flex flex-col">
@@ -202,6 +206,8 @@ export default function Dashboard() {
                 <AlertItem 
                   key={alert.id} 
                   type={alert.type} 
+                  msgKey={alert.msgKey}
+                  brand={alert.brand}
                   msg={alert.msg} 
                   time={alert.time} 
                   url={alert.url} 
@@ -215,7 +221,8 @@ export default function Dashboard() {
   );
 }
 
-function StatCard({ title, value, icon, trend, color }: any) {
+function StatCard({ titleKey, value, icon, trend, color }: any) {
+  const { t } = useLanguage();
   return (
     <motion.div 
       whileHover={{ y: -5 }}
@@ -231,13 +238,15 @@ function StatCard({ title, value, icon, trend, color }: any) {
       </div>
       <div>
         <h3 className="text-2xl font-bold text-white font-heading">{value}</h3>
-        <p className="text-sm text-gray-400 font-mono mt-1">{title}</p>
+        <p className="text-sm text-gray-400 font-mono mt-1">{t(titleKey)}</p>
       </div>
     </motion.div>
   );
 }
 
-function AlertItem({ type, msg, time, url }: any) {
+function AlertItem({ type, msgKey, brand, msg, time, url }: any) {
+  const { t } = useLanguage();
+  
   const getColors = () => {
     switch(type) {
       case 'CRITICAL': return 'border-red-500/30 text-red-400 bg-red-500/5';
@@ -246,6 +255,8 @@ function AlertItem({ type, msg, time, url }: any) {
       default: return 'border-[#00f0ff]/30 text-[#00f0ff] bg-[#00f0ff]/5';
     }
   };
+
+  const displayMsg = msgKey ? (msgKey === 'dashPhishingMsg' ? `${t('dashPhishingMsg')}${brand || ''}` : t(msgKey)) : msg;
 
   return (
     <motion.div 
@@ -259,7 +270,7 @@ function AlertItem({ type, msg, time, url }: any) {
         <span className="text-xs font-bold font-mono tracking-wider">[{type}]</span>
         <span className="text-xs opacity-60 font-mono">{time}</span>
       </div>
-      <p className="text-sm text-gray-300">{msg}</p>
+      <p className="text-sm text-gray-300">{displayMsg}</p>
       {url && (
         <a 
           href={url} 

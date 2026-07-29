@@ -7,6 +7,7 @@ import {
   User, Mail, Phone, ShieldCheck, MapPin, Building, 
   CreditCard, Eye, EyeOff, Save, Edit3, X, Award, ShieldAlert
 } from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005/api';
 
@@ -18,6 +19,7 @@ const locationData: { [key: string]: string[] } = {
 };
 
 export default function ProfilePage() {
+  const { t } = useLanguage();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saveLoading, setSaveLoading] = useState(false);
@@ -134,7 +136,7 @@ export default function ProfilePage() {
   };
 
   const formatAadhaar = (val: string) => {
-    if (!val) return 'Not Configured';
+    if (!val) return t('profAadhaarConfig');
     if (showAadhaar) return val;
     return `XXXX-XXXX-${val.slice(-4)}`;
   };
@@ -144,18 +146,21 @@ export default function ProfilePage() {
       <div className="min-h-[calc(100vh-64px)] flex items-center justify-center">
         <div className="text-center space-y-4">
           <div className="w-12 h-12 border-4 border-[#00f0ff] border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-gray-400 font-mono tracking-wider">RETRIEVING CITIZEN METADATA...</p>
+          <p className="text-gray-400 font-mono tracking-wider">{t('profRetrieving')}</p>
         </div>
       </div>
     );
   }
 
+  const isBangalore = city && (city.trim().toLowerCase() === 'bengaluru' || city.trim().toLowerCase() === 'bangalore');
+  const isMysore = city && (city.trim().toLowerCase() === 'mysuru' || city.trim().toLowerCase() === 'mysore');
+
   return (
     <div className="min-h-[calc(100vh-64px)] p-4 md:p-8 max-w-6xl mx-auto space-y-8">
       {/* Title */}
       <div>
-        <h1 className="text-3xl font-heading font-bold text-white tracking-wide">SECURE PROFILE</h1>
-        <p className="text-[#00f0ff] font-mono text-sm">Citizen Identity & Security Information</p>
+        <h1 className="text-3xl font-heading font-bold text-white tracking-wide">{t('profTitle')}</h1>
+        <p className="text-[#00f0ff] font-mono text-sm">{t('profSubtitle')}</p>
       </div>
 
       {error && (
@@ -209,17 +214,17 @@ export default function ProfilePage() {
                 <span className="text-white text-right break-all max-w-[150px]">{user?._id?.slice(0, 8)}...{user?._id?.slice(-8)}</span>
               </div>
               <div className="flex justify-between">
-                <span>SECURITY CLEARANCE:</span>
-                <span className="text-[#b026ff] font-bold">LEVEL 1 (BASIC)</span>
+                <span>{t('profClearance')}</span>
+                <span className="text-[#b026ff] font-bold">{t('profClearanceLevel1')}</span>
               </div>
               <div className="flex justify-between">
-                <span>PHONE OTP STATUS:</span>
+                <span>{t('profOtpStatus')}</span>
                 <span className={user?.isVerified ? "text-green-400 font-bold" : "text-yellow-400 font-bold"}>
-                  {user?.isVerified ? "VERIFIED" : "UNVERIFIED"}
+                  {user?.isVerified ? t('profOtpVerified') : t('profOtpUnverified')}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span>REGISTRATION DATE:</span>
+                <span>{t('profRegDate')}</span>
                 <span className="text-white">{new Date(user?.createdAt).toLocaleDateString()}</span>
               </div>
             </div>
@@ -248,9 +253,9 @@ export default function ProfilePage() {
             className={`glass-panel p-6 border relative overflow-hidden ${
               !city 
                 ? 'border-gray-800 bg-black/20' 
-                : (city.trim().toLowerCase() === 'bengaluru' || city.trim().toLowerCase() === 'bangalore')
+                : isBangalore
                 ? 'border-red-500/30 bg-red-500/5'
-                : (city.trim().toLowerCase() === 'mysuru' || city.trim().toLowerCase() === 'mysore')
+                : isMysore
                 ? 'border-amber-500/30 bg-amber-500/5'
                 : 'border-yellow-500/30 bg-yellow-500/5'
             }`}
@@ -261,43 +266,43 @@ export default function ProfilePage() {
               <ShieldAlert className={`${
                 !city 
                   ? 'text-gray-500' 
-                  : (city.trim().toLowerCase() === 'bengaluru' || city.trim().toLowerCase() === 'bangalore')
+                  : isBangalore
                   ? 'text-red-400'
-                  : (city.trim().toLowerCase() === 'mysuru' || city.trim().toLowerCase() === 'mysore')
+                  : isMysore
                   ? 'text-amber-400'
                   : 'text-yellow-400'
               }`} size={20} />
               <h3 className="font-heading font-bold text-white text-sm uppercase tracking-wide">
                 {!city 
-                  ? 'LOCATION STATUS: UNSET' 
-                  : (city.trim().toLowerCase() === 'bengaluru' || city.trim().toLowerCase() === 'bangalore')
-                  ? 'CRITICAL LOCAL THREAT'
-                  : (city.trim().toLowerCase() === 'mysuru' || city.trim().toLowerCase() === 'mysore')
-                  ? 'ELEVATED LOCAL THREAT'
-                  : 'MODERATE LOCAL THREAT'}
+                  ? t('profStatusUnset') 
+                  : isBangalore
+                  ? t('profStatusCritical')
+                  : isMysore
+                  ? t('profStatusElevated')
+                  : t('profStatusModerate')}
               </h3>
             </div>
 
             <p className="text-xs text-gray-300 font-mono leading-relaxed mb-4">
               {!city 
-                ? 'No localized threat data available. Please complete your City and State details in the profile section to receive regional security advisories.'
-                : (city.trim().toLowerCase() === 'bengaluru' || city.trim().toLowerCase() === 'bangalore')
-                ? 'High threat activity detected in Bengaluru. Local Cyber Crime units report active campaigns of electricity bill fraud, spoofed UPI payment alerts, and fake part-time job recruitments.'
-                : (city.trim().toLowerCase() === 'mysuru' || city.trim().toLowerCase() === 'mysore')
-                ? 'Medium threat activity detected in Mysuru. Local police warning: surge in KYC update phishing messages and lottery scam calls targeting senior citizens.'
-                : `Standard threat activity monitored in ${city}. General phishing campaigns, OTP hijacking, and OLX buyer scam loops are reported in this region.`}
+                ? t('profAdvisoryUnset')
+                : isBangalore
+                ? t('profAdvisoryBengaluru')
+                : isMysore
+                ? t('profAdvisoryMysuru')
+                : `${t('profAdvisoryOther')} (${city})`}
             </p>
 
             <div className="bg-black/40 border border-gray-800 p-3 rounded text-[11px] font-mono">
-              <span className="text-[#00f0ff] font-bold block mb-1 uppercase">SECURITY ADVISORY:</span>
+              <span className="text-[#00f0ff] font-bold block mb-1 uppercase">{t('profAdvisoryLabel')}</span>
               <span className="text-gray-400">
                 {!city 
-                  ? 'Navigate to "EDIT PROFILE" to set your current location.'
-                  : (city.trim().toLowerCase() === 'bengaluru' || city.trim().toLowerCase() === 'bangalore')
-                  ? 'Do not click on SMS links related to electricity bills or verify transactions with unknown callers.'
-                  : (city.trim().toLowerCase() === 'mysuru' || city.trim().toLowerCase() === 'mysore')
-                  ? 'Never share OTPs or download remote access apps (like AnyDesk/TeamViewer) requested by callers claiming to be bank officers.'
-                  : 'Enable multi-factor authentication (MFA) on all social and banking applications.'}
+                  ? t('profAdvisoryLinkUnset')
+                  : isBangalore
+                  ? t('profAdvisoryLinkBengaluru')
+                  : isMysore
+                  ? t('profAdvisoryLinkMysuru')
+                  : t('profAdvisoryLinkOther')}
               </span>
             </div>
           </motion.div>
@@ -312,20 +317,20 @@ export default function ProfilePage() {
             className="glass-panel p-6 md:p-8 space-y-6"
           >
             <div className="flex justify-between items-center border-b border-gray-800 pb-4">
-              <h2 className="text-xl font-bold text-white font-heading">PERSONAL DETAILS</h2>
+              <h2 className="text-xl font-bold text-white font-heading">{t('profPersonalDetails')}</h2>
               {!isEditing ? (
                 <button
                   onClick={() => setIsEditing(true)}
                   className="px-4 py-2 bg-[#00f0ff]/10 hover:bg-[#00f0ff]/20 border border-[#00f0ff] text-[#00f0ff] rounded-md text-xs font-mono font-bold transition-all flex items-center gap-1.5"
                 >
-                  <Edit3 size={12} /> EDIT PROFILE
+                  <Edit3 size={12} /> {t('profEditProfile')}
                 </button>
               ) : (
                 <button
                   onClick={() => { setIsEditing(false); fetchProfile(); }}
                   className="px-4 py-2 bg-transparent hover:bg-gray-800 text-gray-400 rounded-md text-xs font-mono font-bold transition-all flex items-center gap-1.5"
                 >
-                  <X size={12} /> CANCEL
+                  <X size={12} /> {t('profCancel')}
                 </button>
               )}
             </div>
@@ -333,15 +338,15 @@ export default function ProfilePage() {
             {!isEditing ? (
               // Display Mode
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-2">
-                <DetailRow icon={<User className="text-[#00f0ff]" />} label="Full Name" value={user?.name} />
-                <DetailRow icon={<Mail className="text-[#00f0ff]" />} label="Email Address" value={user?.email} />
-                <DetailRow icon={<Phone className="text-[#00f0ff]" />} label="Phone Number" value={user?.phone || 'Not Provided'} />
-                <DetailRow icon={<Phone className="text-[#00f0ff]" />} label="Secondary Contact" value={user?.secondaryPhone || 'Not Configured'} />
+                <DetailRow icon={<User className="text-[#00f0ff]" />} label={t('profFullName')} value={user?.name} />
+                <DetailRow icon={<Mail className="text-[#00f0ff]" />} label={t('profEmail')} value={user?.email} />
+                <DetailRow icon={<Phone className="text-[#00f0ff]" />} label={t('profPhone')} value={user?.phone || 'Not Provided'} />
+                <DetailRow icon={<Phone className="text-[#00f0ff]" />} label={t('profSecondaryPhone')} value={user?.secondaryPhone || 'Not Configured'} />
                 
                 <div className="flex items-start gap-3 p-3 bg-black/30 border border-gray-800 rounded-md">
                   <CreditCard className="text-[#00f0ff] mt-0.5" size={18} />
                   <div className="space-y-1">
-                    <span className="text-[10px] text-gray-500 font-mono block">AADHAAR CARD</span>
+                    <span className="text-[10px] text-gray-500 font-mono block">{t('profAadhaar')}</span>
                     <span className="text-sm font-semibold text-white font-mono flex items-center gap-2">
                       {formatAadhaar(user?.aadhaar)}
                       {user?.aadhaar && (
@@ -356,15 +361,15 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                <DetailRow icon={<Award className="text-[#00f0ff]" />} label="Blood Group" value={user?.bloodGroup || 'Not Specified'} />
-                <DetailRow icon={<Building className="text-[#00f0ff]" />} label="State" value={user?.state || 'Not Specified'} />
-                <DetailRow icon={<MapPin className="text-[#00f0ff]" />} label="City / Region" value={user?.city || 'Not Specified'} />
+                <DetailRow icon={<Award className="text-[#00f0ff]" />} label={t('profBloodGroup')} value={user?.bloodGroup || 'Not Specified'} />
+                <DetailRow icon={<Building className="text-[#00f0ff]" />} label={t('profState')} value={user?.state || 'Not Specified'} />
+                <DetailRow icon={<MapPin className="text-[#00f0ff]" />} label={t('profCity')} value={user?.city || 'Not Specified'} />
                 
                 <div className="md:col-span-2 flex items-start gap-3 p-3 bg-black/30 border border-gray-800 rounded-md">
                   <MapPin className="text-[#00f0ff] mt-0.5" size={18} />
                   <div className="space-y-1">
-                    <span className="text-[10px] text-gray-500 font-mono block">RESIDENTIAL ADDRESS</span>
-                    <span className="text-sm text-gray-300">{user?.address || 'No residential address configured.'}</span>
+                    <span className="text-[10px] text-gray-500 font-mono block">{t('profAddress')}</span>
+                    <span className="text-sm text-gray-300">{user?.address || t('profNoAddress')}</span>
                   </div>
                 </div>
               </div>
@@ -373,7 +378,7 @@ export default function ProfilePage() {
               <form onSubmit={handleUpdateProfile} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div>
-                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase">Full Name</label>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase">{t('profFullName')}</label>
                     <input 
                       type="text" 
                       value={name}
@@ -384,7 +389,7 @@ export default function ProfilePage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase">Email Address</label>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase">{t('profEmail')}</label>
                     <input 
                       type="email" 
                       value={email}
@@ -395,7 +400,7 @@ export default function ProfilePage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase">Primary Phone</label>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase">{t('profPrimaryPhoneLabel')}</label>
                     <input 
                       type="text" 
                       value={phone}
@@ -407,7 +412,7 @@ export default function ProfilePage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase">Secondary Phone</label>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase">{t('profSecondaryPhoneLabel')}</label>
                     <input 
                       type="text" 
                       value={secondaryPhone}
@@ -418,7 +423,7 @@ export default function ProfilePage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase">Aadhaar Card (12 Digits)</label>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase">{t('profAadhaarInputLabel')}</label>
                     <input 
                       type="text" 
                       maxLength={12}
@@ -430,7 +435,7 @@ export default function ProfilePage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase">Blood Group</label>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase">{t('profBloodGroup')}</label>
                     <select
                       value={bloodGroup}
                       onChange={(e) => setBloodGroup(e.target.value)}
@@ -449,7 +454,7 @@ export default function ProfilePage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase">State</label>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase">{t('profStateSelectLabel')}</label>
                     <select
                       value={state}
                       onChange={(e) => {
@@ -472,14 +477,14 @@ export default function ProfilePage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase">City / Town</label>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase">{t('profCitySelectLabel')}</label>
                     <select
                       value={city}
                       onChange={(e) => setCity(e.target.value)}
                       disabled={!state}
                       className="w-full bg-black/50 border border-gray-700 rounded-md py-2.5 px-3 text-sm text-white focus:outline-none focus:border-[#00f0ff] disabled:opacity-40"
                     >
-                      <option value="">{state ? 'Select City' : 'Select State First'}</option>
+                      <option value="">{state ? t('profCitySelectSet') : t('profCitySelectUnset')}</option>
                       {(() => {
                         if (!state) return null;
                         const citiesList = [...(locationData[state] || [])];
@@ -494,13 +499,13 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="md:col-span-2">
-                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase">Residential Address</label>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase">{t('profAddressInputLabel')}</label>
                     <textarea 
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
                       rows={3}
                       className="w-full bg-black/50 border border-gray-700 rounded-md py-2.5 px-3 text-sm text-white focus:outline-none focus:border-[#00f0ff]"
-                      placeholder="Full home or office address"
+                      placeholder={t('profAddressPlaceholder')}
                     />
                   </div>
                 </div>
@@ -511,14 +516,14 @@ export default function ProfilePage() {
                     onClick={() => { setIsEditing(false); fetchProfile(); }}
                     className="px-5 py-2.5 border border-gray-700 hover:bg-gray-800 text-gray-400 rounded-md text-sm font-mono transition-all"
                   >
-                    CANCEL
+                    {t('profCancel')}
                   </button>
                   <button
                     type="submit"
                     disabled={saveLoading}
                     className="px-5 py-2.5 bg-[#00f0ff] hover:bg-[#00f0ff]/80 text-black font-bold rounded-md text-sm font-mono transition-all flex items-center gap-1.5 shadow-[0_0_10px_rgba(0,240,255,0.2)] disabled:opacity-50"
                   >
-                    <Save size={16} /> {saveLoading ? 'SAVING DATA...' : 'SAVE CHANGES'}
+                    <Save size={16} /> {saveLoading ? t('profSaving') : t('profSaveChanges')}
                   </button>
                 </div>
               </form>

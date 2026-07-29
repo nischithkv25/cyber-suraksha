@@ -2,15 +2,17 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Shield, Menu, X, User, LogOut } from 'lucide-react';
+import { Shield, Menu, X, User, LogOut, Languages } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const pathname = usePathname();
   const router = useRouter();
+  const { lang, setLang, t } = useLanguage();
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -47,17 +49,37 @@ export default function Navbar() {
           <div className="hidden md:block">
             <div className="ml-10 flex items-center space-x-4">
               <Link href="/dashboard" className={`hover:text-[#00f0ff] px-3 py-2 rounded-md text-sm font-medium transition-colors ${pathname === '/dashboard' ? 'text-[#00f0ff]' : ''}`}>
-                Dashboard
+                {t('navDashboard')}
               </Link>
               <Link href="/report" className={`hover:text-[#00f0ff] px-3 py-2 rounded-md text-sm font-medium transition-colors ${pathname === '/report' ? 'text-[#00f0ff]' : ''}`}>
-                Report Scam
+                {t('navReportScam')}
               </Link>
               <Link href="/scan" className={`hover:text-[#00f0ff] px-3 py-2 rounded-md text-sm font-medium transition-colors ${pathname === '/scan' ? 'text-[#00f0ff]' : ''}`}>
-                AI Scanner
+                {t('navAIScanner')}
               </Link>
               <Link href="/stories" className={`hover:text-[#00f0ff] px-3 py-2 rounded-md text-sm font-medium transition-colors ${pathname === '/stories' ? 'text-[#00f0ff]' : ''}`}>
-                Story Board
+                {t('navStoryBoard')}
               </Link>
+
+              {/* Language Switcher */}
+              <div className="flex bg-black/40 border border-gray-800 rounded p-1 items-center gap-1 select-none">
+                <Languages size={13} className="text-gray-500 mx-1" />
+                <button 
+                  id="nav-lang-en-btn"
+                  onClick={() => setLang('en')}
+                  className={`px-2 py-0.5 text-xs font-mono rounded transition-all ${lang === 'en' ? 'bg-[#00f0ff] text-black shadow-[0_0_8px_rgba(0,240,255,0.4)]' : 'text-gray-400 hover:text-white'}`}
+                >
+                  EN
+                </button>
+                <button 
+                  id="nav-lang-kn-btn"
+                  onClick={() => setLang('kn')}
+                  className={`px-2 py-0.5 text-xs font-mono rounded transition-all ${lang === 'kn' ? 'bg-[#00f0ff] text-black shadow-[0_0_8px_rgba(0,240,255,0.4)]' : 'text-gray-400 hover:text-white'}`}
+                >
+                  KN
+                </button>
+              </div>
+
               {user ? (
                 <>
                   <Link href="/profile" className={`hover:text-[#00f0ff] px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-1.5 ${pathname === '/profile' ? 'text-[#00f0ff]' : ''}`}>
@@ -67,12 +89,12 @@ export default function Navbar() {
                     onClick={handleLogout}
                     className="bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-2"
                   >
-                    <LogOut size={16} /> Logout
+                    <LogOut size={16} /> {t('navLogout')}
                   </button>
                 </>
               ) : (
                 <Link href="/login" className="bg-[#00f0ff]/10 border border-[#00f0ff] text-[#00f0ff] hover:bg-[#00f0ff]/20 px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-2">
-                  <User size={16} /> Login
+                  <User size={16} /> {t('navLogin')}
                 </Link>
               )}
             </div>
@@ -95,22 +117,42 @@ export default function Navbar() {
           className="md:hidden glass-panel border-x-0 border-b-0 rounded-none"
         >
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            <Link href="/dashboard" className="block px-3 py-2 rounded-md text-base font-medium hover:text-[#00f0ff]">Dashboard</Link>
-            <Link href="/report" className="block px-3 py-2 rounded-md text-base font-medium hover:text-[#00f0ff]">Report Scam</Link>
-            <Link href="/scan" className="block px-3 py-2 rounded-md text-base font-medium hover:text-[#00f0ff]">AI Scanner</Link>
-            <Link href="/stories" className="block px-3 py-2 rounded-md text-base font-medium hover:text-[#00f0ff]">Story Board</Link>
+            <Link href="/dashboard" className="block px-3 py-2 rounded-md text-base font-medium hover:text-[#00f0ff]">{t('navDashboard')}</Link>
+            <Link href="/report" className="block px-3 py-2 rounded-md text-base font-medium hover:text-[#00f0ff]">{t('navReportScam')}</Link>
+            <Link href="/scan" className="block px-3 py-2 rounded-md text-base font-medium hover:text-[#00f0ff]">{t('navAIScanner')}</Link>
+            <Link href="/stories" className="block px-3 py-2 rounded-md text-base font-medium hover:text-[#00f0ff]">{t('navStoryBoard')}</Link>
+            
+            {/* Mobile Language Switcher */}
+            <div className="flex items-center justify-between px-3 py-2 border-t border-gray-850 mt-2">
+              <span className="text-sm font-medium text-gray-400">Language / ಭಾಷೆ</span>
+              <div className="flex bg-black/40 border border-gray-800 rounded p-1 items-center gap-1 select-none">
+                <button 
+                  onClick={() => setLang('en')}
+                  className={`px-2.5 py-0.5 text-xs font-mono rounded transition-all ${lang === 'en' ? 'bg-[#00f0ff] text-black' : 'text-gray-400 hover:text-white'}`}
+                >
+                  EN
+                </button>
+                <button 
+                  onClick={() => setLang('kn')}
+                  className={`px-2.5 py-0.5 text-xs font-mono rounded transition-all ${lang === 'kn' ? 'bg-[#00f0ff] text-black' : 'text-gray-400 hover:text-white'}`}
+                >
+                  KN
+                </button>
+              </div>
+            </div>
+
             {user ? (
               <>
-                <Link href="/profile" className="block px-3 py-2 rounded-md text-base font-medium hover:text-[#00f0ff]">Profile ({user.name})</Link>
+                <Link href="/profile" className="block px-3 py-2 rounded-md text-base font-medium hover:text-[#00f0ff]">{t('navProfile')} ({user.name})</Link>
                 <button 
                   onClick={handleLogout}
                   className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-red-400 hover:bg-red-500/10"
                 >
-                  Logout
+                  {t('navLogout')}
                 </button>
               </>
             ) : (
-              <Link href="/login" className="block px-3 py-2 rounded-md text-base font-medium text-[#00f0ff]">Login</Link>
+              <Link href="/login" className="block px-3 py-2 rounded-md text-base font-medium text-[#00f0ff]">{t('navLogin')}</Link>
             )}
           </div>
         </motion.div>
