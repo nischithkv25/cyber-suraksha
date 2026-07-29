@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageSquare, X, Send, Bot, ShieldCheck, Mic, MicOff, Volume2, VolumeX, Loader2 } from 'lucide-react';
-import { useLanguage, Language } from '@/context/LanguageContext';
+import { useLanguage } from '@/context/LanguageContext';
+import { Language } from '@/utils/translations';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005/api';
 
@@ -13,9 +14,9 @@ interface ChatMessage {
 }
 
 export default function AIChatbot() {
-  const { language, t } = useLanguage();
+  const { lang, t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
-  const [chatLang, setChatLang] = useState<Language>(language);
+  const [chatLang, setChatLang] = useState<Language>(lang);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -28,15 +29,15 @@ export default function AIChatbot() {
 
   // Sync with global language on initialization or when it changes
   useEffect(() => {
-    setChatLang(language);
-  }, [language]);
+    setChatLang(lang);
+  }, [lang]);
 
   // Set or update initial welcome message based on language
   useEffect(() => {
     if (messages.length === 0 || (messages.length === 1 && messages[0].role === 'ai')) {
       setMessages([{ role: 'ai', text: t('chatWelcomeMsg') }]);
     }
-  }, [language, t]);
+  }, [lang, t]);
 
   // Scroll to bottom when messages list updates
   useEffect(() => {
